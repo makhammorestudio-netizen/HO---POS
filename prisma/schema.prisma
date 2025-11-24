@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STYLIST
+  ASSISTANT
+}
+
+enum ServiceCategory {
+  HAIR
+  NAIL
+  LASH
+  PRODUCT
+}
+
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  TRANSFER
+  GOWABI
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  role      Role
+  pin       String?  // Simple PIN for POS access
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  primaryTransactions   TransactionItem[] @relation("PrimaryStaff")
+  assistantTransactions TransactionItem[] @relation("AssistantStaff")
+  commissions           CommissionLog[]
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String   @unique
+  points    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+}
+
+model Service {
+  id          String          @id @default(cuid())
+  name        String
+  category    ServiceCategory
+  price       Decimal
+  durationMin Int             @default(30)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  transactionItems TransactionItem[]
+}
+
+model Transaction {
+  id            String        @id @default(cuid())
+  totalAmount   Decimal
+  paymentMethod PaymentMethod
+  note          String?       // For coupon codes or remarks
+  createdAt     DateTime      @default(now())
+  
+  customerId    String?
+  customer      Customer?     @relation(fields: [customerId], references: [id])
+
+  items         TransactionItem[]
+}
+
+model TransactionItem {
+  id            String   @id @default(cuid())
+  price         Decimal  // Price at time of sale
+  
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+
+  serviceId     String
+  service       Service     @relation(fields: [serviceId], references: [id])
+
+  // Commission tracking
+  primaryStaffId String
+  primaryStaff   User    @relation("PrimaryStaff", fields: [primaryStaffId], references: [id])
+
+  assistantStaffId String?
+  assistantStaff   User?   @relation("AssistantStaff", fields: [assistantStaffId], references: [id])
+
+  commissionLogs CommissionLog[]
+}
+
+model CommissionLog {
+  id                String   @id @default(cuid())
+  amount            Decimal
+  reason            String   // e.g., "10% Hair Service"
+  createdAt         DateTime @default(now())
+
+  staffId           String
+  staff             User     @relation(fields: [staffId], references: [id])
+
+  transactionItemId String
+  transactionItem   TransactionItem @relation(fields: [transactionItemId], references: [id])
+}
