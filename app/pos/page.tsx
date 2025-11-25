@@ -60,8 +60,24 @@ export default function POSPage() {
 
     // Fetch data
     useEffect(() => {
-        fetch('/api/services').then(res => res.json()).then(setServices);
-        fetch('/api/staff').then(res => res.json()).then(setStaff);
+        const fetchData = async () => {
+            try {
+                const servicesRes = await fetch('/api/services');
+                if (servicesRes.ok) {
+                    const data = await servicesRes.json();
+                    if (Array.isArray(data)) setServices(data);
+                }
+
+                const staffRes = await fetch('/api/staff');
+                if (staffRes.ok) {
+                    const data = await staffRes.json();
+                    if (Array.isArray(data)) setStaff(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch data", error);
+            }
+        };
+        fetchData();
     }, []);
 
     const addToCart = (service: Service) => {
