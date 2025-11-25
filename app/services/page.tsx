@@ -17,6 +17,7 @@ interface Service {
 export default function ServicesPage() {
     const [services, setServices] = useState<Service[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // New Service Form
     const [newName, setNewName] = useState('');
@@ -25,10 +26,19 @@ export default function ServicesPage() {
     const [newDuration, setNewDuration] = useState('60');
 
     const fetchServices = async () => {
-        const res = await fetch('/api/services');
-        if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data)) setServices(data);
+        try {
+            const res = await fetch('/api/services');
+            if (res.ok) {
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    setServices(data);
+                    setError(null);
+                }
+            } else {
+                setError("Could not connect to the database.");
+            }
+        } catch (e) {
+            setError("Failed to load services.");
         }
     };
 
@@ -75,6 +85,14 @@ export default function ServicesPage() {
                     Generate Example Data
                 </Button>
             </div>
+
+            {error && (
+                <div className="rounded-lg border border-red-500/50 bg-red-500/10 p-4 text-red-500">
+                    <h3 className="font-bold">Database Error</h3>
+                    <p>The system cannot save or load data. This usually means the Database is not set up on Vercel.</p>
+                    <p className="mt-2 text-sm underline">Please check the "Storage" tab in your Vercel Dashboard.</p>
+                </div>
+            )}
 
             {/* Create Service Card */}
             <Card className="glass border-0">
