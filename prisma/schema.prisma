@@ -27,6 +27,13 @@ enum PaymentMethod {
   GOWABI
 }
 
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String
@@ -39,6 +46,7 @@ model User {
   primaryTransactions   TransactionItem[] @relation("PrimaryStaff")
   assistantTransactions TransactionItem[] @relation("AssistantStaff")
   commissions           CommissionLog[]
+  appointments          Appointment[]
 }
 
 model Customer {
@@ -62,6 +70,7 @@ model Service {
   updatedAt   DateTime        @updatedAt
 
   transactionItems TransactionItem[]
+  appointments     Appointment[]
 }
 
 model Transaction {
@@ -108,4 +117,22 @@ model CommissionLog {
 
   transactionItemId String
   transactionItem   TransactionItem @relation(fields: [transactionItemId], references: [id])
+}
+
+model Appointment {
+  id              String            @id @default(cuid())
+  customerName    String
+  customerPhone   String
+  scheduledAt     DateTime          // Date and time of appointment
+  deposit         Decimal           @default(0)
+  notes           String?
+  status          AppointmentStatus @default(SCHEDULED)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  serviceId       String
+  service         Service           @relation(fields: [serviceId], references: [id])
+  
+  staffId         String?
+  staff           User?             @relation(fields: [staffId], references: [id])
 }
