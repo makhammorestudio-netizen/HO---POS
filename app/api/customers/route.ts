@@ -1,7 +1,5 @@
-
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { Role } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +28,7 @@ export async function POST(request: Request) {
             data: {
                 name,
                 phone,
-                points: 0, // Start with 0 points
+                points: 0,
             },
         });
 
