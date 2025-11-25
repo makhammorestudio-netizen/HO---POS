@@ -35,10 +35,11 @@ export default function ServicesPage() {
                     setError(null);
                 }
             } else {
-                setError("Could not connect to the database.");
+                const err = await res.json();
+                setError(err.error || "Could not connect to the database.");
             }
-        } catch (e) {
-            setError("Failed to load services.");
+        } catch (e: any) {
+            setError(e.message || "Failed to load services.");
         }
     };
 
@@ -89,8 +90,8 @@ export default function ServicesPage() {
             {error && (
                 <div className="rounded-lg border border-red-500/50 bg-red-500/10 p-4 text-red-500">
                     <h3 className="font-bold">Database Error</h3>
-                    <p>The system cannot save or load data. This usually means the Database is not set up on Vercel.</p>
-                    <p className="mt-2 text-sm underline">Please check the "Storage" tab in your Vercel Dashboard.</p>
+                    <p>{error}</p>
+                    <p className="mt-2 text-sm">If it says "Table does not exist", we need to push the schema.</p>
                 </div>
             )}
 
