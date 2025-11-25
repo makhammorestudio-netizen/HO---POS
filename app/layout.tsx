@@ -7,8 +7,8 @@ import { Sidebar } from "@/components/layout/sidebar";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-    title: "Luxe Salon POS",
-    description: "Premium Point of Sale System for Beauty Salons",
+    title: "HOPOS",
+    description: "HOPOS",
 };
 
 export default function RootLayout({

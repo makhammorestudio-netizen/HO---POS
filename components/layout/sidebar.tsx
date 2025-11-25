@@ -40,18 +40,44 @@ export function Sidebar() {
                             >
                                 <item.icon className="h-5 w-5" />
                                 {item.label}
-                            </Link>
-                        );
-                    })}
-                </nav>
-            </div>
+                                <div className="flex items-center gap-3 border-b border-white/10 p-6">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-lg">
+                                        H
+                                    </div>
+                                    <div>
+                                        <h1 className="font-bold text-lg">HOPOS</h1>
+                                        <p className="text-xs text-muted-foreground">Beauty Salon</p>
+                                    </div>
+                                </div>
 
-            <div className="border-t border-white/10 pt-4">
-                <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-white/5 hover:text-foreground transition-all">
-                    <LogOut className="h-5 w-5" />
-                    Sign Out
-                </button>
-            </div>
-        </div>
-    );
-}
+                                <nav className="space-y-2">
+                                    {navItems.map((item) => {
+                                        const isActive = pathname === item.href;
+                                        return (
+                                            <Link
+                                                key={item.href}
+                                                href={item.href}
+                                                className={cn(
+                                                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
+                                                    isActive
+                                                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                                                        : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                                                )}
+                                            >
+                                                <item.icon className="h-5 w-5" />
+                                                {item.label}
+                                            </Link>
+                                        );
+                                    })}
+                                </nav>
+
+                                <div className="border-t border-white/10 pt-4">
+                                    <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-white/5 hover:text-foreground transition-all">
+                                        <LogOut className="h-5 w-5" />
+                                        Sign Out
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    }
+```

@@ -111,6 +111,7 @@ export default function POSPage() {
                 body: JSON.stringify({
                     items: cart.map(item => ({
                         serviceId: item.service.id,
+                        price: item.service.price,
                         primaryStaffId: item.primaryStaffId,
                         assistantStaffId: item.assistantStaffId
                     })),
@@ -200,7 +201,7 @@ export default function POSPage() {
                                 <p className="mt-1 text-sm text-muted-foreground">{service.durationMin} min</p>
                             </div>
                             <div className="mt-4 text-lg font-bold">
-                                ${Number(service.price).toFixed(2)}
+                                ฿{Number(service.price).toFixed(2)}
                             </div>
                         </button>
                     ))}
@@ -229,7 +230,7 @@ export default function POSPage() {
                             <div key={index} className="rounded-lg border border-white/10 bg-white/5 p-3">
                                 <div className="flex justify-between mb-2">
                                     <span className="font-medium">{item.service.name}</span>
-                                    <span className="font-bold">${Number(item.service.price).toFixed(2)}</span>
+                                    <span className="font-bold">฿{Number(item.service.price).toFixed(2)}</span>
                                 </div>
 
                                 {/* Staff Selection */}
@@ -304,7 +305,7 @@ export default function POSPage() {
 
                     <div className="flex items-center justify-between text-lg font-bold">
                         <span>Total</span>
-                        <span>${totalAmount.toFixed(2)}</span>
+                        <span>฿{totalAmount.toFixed(2)}</span>
                     </div>
 
                     <Button
