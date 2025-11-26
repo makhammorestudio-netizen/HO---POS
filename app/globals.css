@@ -1,40 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Premium Dark Theme Variables */
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    /* Bright Pastel Theme Variables */
+    --background: 250 100% 99%;
+    /* Soft Off-White #F9FAFF */
+    --foreground: 222 47% 25%;
+    /* Deep Blue for text */
 
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 100%;
+    /* White #FFFFFF */
+    --card-foreground: 222 47% 25%;
 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 25%;
 
-    /* Rose Gold Primary */
-    --primary: 346 77% 49%;
-    --primary-foreground: 355 100% 97%;
+    /* Deep Blue Primary */
+    --primary: 222 64% 33%;
+    /* Deep Blue #1F3C88 */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    /* Indigo Secondary */
+    --secondary: 234 47% 33%;
+    /* Indigo #2E3A7D */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    /* Muted */
+    --muted: 250 100% 97%;
+    --muted-foreground: 222 20% 50%;
 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    /* Accent - Coral */
+    --accent: 355 100% 75%;
+    /* Coral #FF7F8A */
+    --accent-foreground: 222 47% 25%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 346 77% 49%;
+    --border: 250 50% 90%;
+    --input: 250 50% 90%;
+    --ring: 222 64% 33%;
 
-    --radius: 0.75rem;
+    --radius: 1.25rem;
+    /* 20px default */
+
+    /* Custom Pastel Accents */
+    --peach: 10 100% 91%;
+    /* Soft Peach #FFD5CE */
+    --lavender: 240 100% 95%;
+    /* Lavender #E5E6FF */
+    --coral: 355 100% 75%;
+    /* Coral #FF7F8A */
   }
 }
 
@@ -45,20 +66,67 @@
 
   body {
     @apply bg-background text-foreground;
-    /* Subtle gradient background */
-    background-image: radial-gradient(at 0% 0%, hsla(346, 77%, 49%, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, hsla(260, 100%, 60%, 0.15) 0px, transparent 50%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    /* Light pastel gradient background */
+    background: linear-gradient(135deg, hsl(var(--lavender)) 0%, hsl(var(--peach)) 100%);
     background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold;
   }
 }
 
-/* Glassmorphism Utilities */
+/* Card Utilities */
 @layer utilities {
+  .card-shadow {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  }
+
+  .card-shadow-hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Remove old glass effects */
   .glass {
-    @apply bg-white/5 backdrop-blur-lg border border-white/10 shadow-xl;
+    @apply bg-white border border-gray-100 shadow-lg;
   }
 
   .glass-hover {
-    @apply hover:bg-white/10 transition-all duration-300;
+    @apply hover:shadow-xl transition-all duration-300;
+  }
+
+  /* Pastel backgrounds for icons/badges */
+  .bg-pastel-coral {
+    background-color: hsl(var(--coral) / 0.2);
+  }
+
+  .bg-pastel-peach {
+    background-color: hsl(var(--peach));
+  }
+
+  .bg-pastel-lavender {
+    background-color: hsl(var(--lavender));
+  }
+
+  /* Metric card number style */
+  .metric-number {
+    @apply text-4xl font-bold;
+  }
+
+  /* Friendly rounded containers */
+  .rounded-friendly {
+    border-radius: 1.5rem;
+    /* 24px */
+  }
+
+  .rounded-card {
+    border-radius: 1rem;
+    /* 16px */
   }
 }
