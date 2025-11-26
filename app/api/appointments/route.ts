@@ -7,10 +7,25 @@ export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
         const month = searchParams.get('month'); // Format: YYYY-MM
+        const date = searchParams.get('date'); // Format: YYYY-MM-DD
 
         let whereClause = {};
 
-        if (month) {
+        if (date) {
+            // Fetch appointments for a specific date
+            const startDate = new Date(date);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(date);
+            endDate.setHours(23, 59, 59, 999);
+
+            whereClause = {
+                scheduledAt: {
+                    gte: startDate,
+                    lte: endDate
+                }
+            };
+        } else if (month) {
+            // Fetch appointments for a specific month
             const [year, monthNum] = month.split('-');
             const startDate = new Date(parseInt(year), parseInt(monthNum) - 1, 1);
             const endDate = new Date(parseInt(year), parseInt(monthNum), 0, 23, 59, 59);

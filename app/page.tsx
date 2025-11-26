@@ -15,6 +15,8 @@ import {
     Target,
     CalendarDays
 } from 'lucide-react';
+import { DaySchedule } from '@/components/dashboard/DaySchedule';
+import { UpcomingAppointments } from '@/components/dashboard/UpcomingAppointments';
 
 interface DashboardMetrics {
     monthlyRevenue: number;
@@ -22,6 +24,7 @@ interface DashboardMetrics {
     totalStaff: number;
     totalCustomers: number;
     recentTransactions: any[];
+    todayAppointments: any[];
 }
 
 export default function Home() {
@@ -208,64 +211,15 @@ export default function Home() {
                             </Link>
                         </div>
                     </div>
+
+                    {/* Day Schedule */}
+                    <DaySchedule />
                 </div>
 
                 {/* Right Column */}
                 <div className="space-y-6">
-                    {/* Today's Bookings */}
-                    <Card className="glass border-0">
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle className="flex items-center gap-2">
-                                <Clock className="h-5 w-5 text-primary" />
-                                Today's Bookings
-                            </CardTitle>
-                            <span className="text-sm text-muted-foreground">
-                                {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                            </span>
-                        </CardHeader>
-                        <CardContent>
-                            {metrics?.recentTransactions && metrics.recentTransactions.length > 0 ? (
-                                <div className="space-y-3">
-                                    {metrics.recentTransactions.slice(0, 6).map((transaction: any) => (
-                                        <div
-                                            key={transaction.id}
-                                            className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/5 p-3 transition-all hover:bg-white/10"
-                                        >
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                                <Clock className="h-5 w-5" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="font-medium truncate">
-                                                            {transaction.customer ? transaction.customer.name : 'Walk-in Customer'}
-                                                        </p>
-                                                        <p className="text-sm text-muted-foreground truncate">
-                                                            {transaction.items.map((item: any) => item.service.name).join(', ')}
-                                                        </p>
-                                                    </div>
-                                                    <span className="font-bold text-primary whitespace-nowrap">
-                                                        ฿{Number(transaction.totalAmount).toFixed(0)}
-                                                    </span>
-                                                </div>
-                                                <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                                                    <span>{new Date(transaction.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
-                                                    <span>•</span>
-                                                    <span>{transaction.items[0]?.primaryStaff?.name}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="py-12 text-center text-muted-foreground">
-                                    <CalendarDays className="mx-auto mb-3 h-12 w-12 opacity-20" />
-                                    <p className="font-medium">No bookings yet</p>
-                                    <p className="text-sm">Transactions will appear here</p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                    {/* Upcoming Appointments */}
+                    <UpcomingAppointments />
 
                     {/* Recent Activity */}
                     <Card className="glass border-0">
