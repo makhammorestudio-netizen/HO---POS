@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Clock, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -96,43 +96,35 @@ export function UpcomingAppointments() {
         return `${formatTime(start)} - ${formatTime(end)}`;
     };
 
-    // Generate calendar days for current month
-    const getDaysInMonth = () => {
-        const year = selectedDate.getFullYear();
-        const month = selectedDate.getMonth();
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const daysInMonth = lastDay.getDate();
-        const startingDayOfWeek = firstDay.getDay();
-
+    // Generate week days around selected date
+    const getWeekDays = () => {
         const days = [];
+        const currentDay = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
+        const startOfWeek = new Date(selectedDate);
+        startOfWeek.setDate(selectedDate.getDate() - currentDay);
 
-        // Add empty cells for days before the first of the month
-        for (let i = 0; i < startingDayOfWeek; i++) {
-            days.push(null);
-        }
-
-        // Add all days of the month
-        for (let day = 1; day <= daysInMonth; day++) {
-            days.push(new Date(year, month, day));
+        for (let i = 0; i < 7; i++) {
+            const day = new Date(startOfWeek);
+            day.setDate(startOfWeek.getDate() + i);
+            days.push(day);
         }
 
         return days;
     };
 
-    const previousMonth = () => {
+    const previousWeek = () => {
         const newDate = new Date(selectedDate);
-        newDate.setMonth(newDate.getMonth() - 1);
+        newDate.setDate(newDate.getDate() - 7);
         setSelectedDate(newDate);
     };
 
-    const nextMonth = () => {
+    const nextWeek = () => {
         const newDate = new Date(selectedDate);
-        newDate.setMonth(newDate.getMonth() + 1);
+        newDate.setDate(newDate.getDate() + 7);
         setSelectedDate(newDate);
     };
 
-    const days = getDaysInMonth();
+    const weekDays = getWeekDays();
     const monthYear = selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
     return (
@@ -141,49 +133,47 @@ export function UpcomingAppointments() {
                 <CardTitle className="text-lg">Upcoming Appointments</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                {/* Mini Calendar */}
+                {/* Compact Week Calendar */}
                 <div className="rounded-lg border border-white/10 bg-white/5 p-3">
-                    <div className="flex items-center justify-between mb-2">
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={previousMonth}>
+                    <div className="flex items-center justify-between mb-3">
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={previousWeek}>
                             <ChevronLeft className="h-3 w-3" />
                         </Button>
-                        <span className="text-sm font-medium">{monthYear}</span>
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={nextMonth}>
+                        <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-primary" />
+                            <span className="text-sm font-medium">{monthYear}</span>
+                        </div>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={nextWeek}>
                             <ChevronRight className="h-3 w-3" />
                         </Button>
                     </div>
 
-                    {/* Calendar Grid */}
-                    <div className="grid grid-cols-7 gap-1">
-                        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
-                            <div key={i} className="text-center text-[10px] text-muted-foreground py-1">
-                                {day}
-                            </div>
-                        ))}
-                        {days.map((date, index) => {
-                            const isSelected = date &&
+                    {/* Week Days Horizontal */}
+                    <div className="flex justify-between gap-2">
+                        {weekDays.map((date, index) => {
+                            const isSelected =
                                 date.getDate() === selectedDate.getDate() &&
                                 date.getMonth() === selectedDate.getMonth() &&
                                 date.getFullYear() === selectedDate.getFullYear();
-                            const isToday = date &&
+                            const isToday =
                                 date.getDate() === new Date().getDate() &&
                                 date.getMonth() === new Date().getMonth() &&
                                 date.getFullYear() === new Date().getFullYear();
+                            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
 
                             return (
                                 <button
                                     key={index}
-                                    onClick={() => date && setSelectedDate(date)}
-                                    disabled={!date}
+                                    onClick={() => setSelectedDate(date)}
                                     className={cn(
-                                        "aspect-square text-[10px] rounded transition-colors",
-                                        !date && "invisible",
-                                        date && !isSelected && "hover:bg-white/10",
-                                        isSelected && "bg-primary text-primary-foreground font-medium",
+                                        "flex flex-col items-center justify-center rounded-lg p-2 min-w-[50px] transition-colors",
+                                        isSelected && "bg-primary text-primary-foreground font-semibold",
+                                        !isSelected && "hover:bg-white/10",
                                         isToday && !isSelected && "border border-primary/50"
                                     )}
                                 >
-                                    {date?.getDate()}
+                                    <span className="text-xs opacity-70">{dayName}</span>
+                                    <span className="text-lg font-semibold">{date.getDate()}</span>
                                 </button>
                             );
                         })}
