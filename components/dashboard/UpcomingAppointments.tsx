@@ -22,7 +22,7 @@ interface Appointment {
     };
     staff?: {
         name: string;
-    };
+    } | null;
 }
 
 export function UpcomingAppointments() {
