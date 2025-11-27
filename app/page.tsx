@@ -67,56 +67,64 @@ export default function Home() {
             </div>
 
             {/* Metrics Grid */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="glass border-0">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
-                        <DollarSign className="h-4 w-4 text-primary" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">฿{metrics?.monthlyRevenue.toFixed(2) || '0.00'}</div>
-                        <p className="text-xs text-muted-foreground">
-                            This month's total
-                        </p>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <Card className="bg-white border-0 rounded-friendly card-shadow hover:card-shadow-hover transition-shadow">
+                    <CardContent className="p-6">
+                        <div className="flex items-start justify-between">
+                            <div className="space-y-2">
+                                <p className="text-sm font-medium text-muted-foreground">Monthly Revenue</p>
+                                <p className="metric-number">฿{metrics?.monthlyRevenue.toFixed(2) || '0.00'}</p>
+                                <p className="text-xs text-muted-foreground">This month's total</p>
+                            </div>
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-pastel-coral">
+                                <DollarSign className="h-6 w-6 text-primary" />
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
 
-                <Card className="glass border-0">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Today's Sales</CardTitle>
-                        <Calendar className="h-4 w-4 text-primary" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{metrics?.todayTransactions || 0}</div>
-                        <p className="text-xs text-muted-foreground">
-                            Transactions today
-                        </p>
+                <Card className="bg-white border-0 rounded-friendly card-shadow hover:card-shadow-hover transition-shadow">
+                    <CardContent className="p-6">
+                        <div className="flex items-start justify-between">
+                            <div className="space-y-2">
+                                <p className="text-sm font-medium text-muted-foreground">Today's Sales</p>
+                                <p className="metric-number">{metrics?.todayTransactions || 0}</p>
+                                <p className="text-xs text-muted-foreground">Transactions today</p>
+                            </div>
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-pastel-peach">
+                                <Calendar className="h-6 w-6 text-secondary" />
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
 
-                <Card className="glass border-0">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Active Staff</CardTitle>
-                        <Users className="h-4 w-4 text-primary" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{metrics?.totalStaff || 0}</div>
-                        <p className="text-xs text-muted-foreground">
-                            Team members
-                        </p>
+                <Card className="bg-white border-0 rounded-friendly card-shadow hover:card-shadow-hover transition-shadow">
+                    <CardContent className="p-6">
+                        <div className="flex items-start justify-between">
+                            <div className="space-y-2">
+                                <p className="text-sm font-medium text-muted-foreground">Active Staff</p>
+                                <p className="metric-number">{metrics?.totalStaff || 0}</p>
+                                <p className="text-xs text-muted-foreground">Team members</p>
+                            </div>
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-pastel-lavender">
+                                <Users className="h-6 w-6 text-primary" />
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
 
-                <Card className="glass border-0">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-primary" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{metrics?.totalCustomers || 0}</div>
-                        <p className="text-xs text-muted-foreground">
-                            Registered clients
-                        </p>
+                <Card className="bg-white border-0 rounded-friendly card-shadow hover:card-shadow-hover transition-shadow">
+                    <CardContent className="p-6">
+                        <div className="flex items-start justify-between">
+                            <div className="space-y-2">
+                                <p className="text-sm font-medium text-muted-foreground">Total Customers</p>
+                                <p className="metric-number">{metrics?.totalCustomers || 0}</p>
+                                <p className="text-xs text-muted-foreground">Registered clients</p>
+                            </div>
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-pastel-coral">
+                                <TrendingUp className="h-6 w-6 text-accent" />
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
@@ -126,39 +134,49 @@ export default function Home() {
                 {/* Left Column */}
                 <div className="space-y-6">
                     {/* Financial Goal */}
-                    <Card className="glass border-0">
+                    {/* Financial Goal */}
+                    <Card className="bg-white border-0 rounded-friendly card-shadow">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <Target className="h-5 w-5 text-primary" />
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-pastel-lavender">
+                                    <Target className="h-5 w-5 text-primary" />
+                                </div>
                                 Financial Goal
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                 <div className="flex items-baseline justify-between">
-                                    <span className="text-sm text-muted-foreground">Target</span>
-                                    <span className="text-lg font-bold">฿{monthlyTarget.toLocaleString()}</span>
+                                    <span className="text-sm font-medium text-muted-foreground">Monthly Target</span>
+                                    <span className="text-2xl font-bold text-primary">฿{monthlyTarget.toLocaleString()}</span>
                                 </div>
 
                                 {/* Progress Bar */}
-                                <div className="relative h-32 rounded-lg bg-gradient-to-t from-primary/20 to-primary/5 p-4">
-                                    <div
-                                        className="absolute bottom-0 left-0 right-0 rounded-lg bg-gradient-to-t from-primary to-primary/50 transition-all duration-1000"
-                                        style={{ height: `${Math.min(progress, 100)}%` }}
-                                    />
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="text-center">
-                                            <div className="text-3xl font-bold">{progress.toFixed(0)}%</div>
-                                            <div className="text-xs text-muted-foreground">of monthly target</div>
+                                <div className="relative h-40 rounded-2xl bg-gradient-to-b from-white to-slate-50 border border-slate-100 p-6 shadow-inner">
+                                    {/* Chart Line (Simulated) */}
+                                    <div className="absolute bottom-0 left-0 right-0 h-full overflow-hidden rounded-2xl">
+                                        <div
+                                            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-primary/20 to-primary/5 transition-all duration-1000"
+                                            style={{ height: `${Math.min(progress, 100)}%` }}
+                                        >
+                                            <div className="absolute top-0 left-0 right-0 h-[2px] bg-primary shadow-[0_0_10px_rgba(31,60,136,0.5)]" />
                                         </div>
                                     </div>
+
+                                    <div className="absolute inset-0 flex items-center justify-center z-10">
+                                        <div className="text-center bg-white/80 backdrop-blur-sm px-4 py-2 rounded-xl shadow-sm border border-white/50">
+                                            <div className="text-3xl font-bold text-primary">{progress.toFixed(0)}%</div>
+                                            <div className="text-xs font-medium text-muted-foreground">ACHIEVED</div>
+                                        </div>
+                                    </div>
+
                                     {/* Target Line */}
-                                    <div className="absolute left-0 right-0 top-0 border-t-2 border-dashed border-primary/50" />
+                                    <div className="absolute left-0 right-0 top-0 border-t-2 border-dashed border-primary/30" />
                                 </div>
 
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Current</span>
-                                    <span className="font-semibold text-primary">฿{(metrics?.monthlyRevenue || 0).toLocaleString()}</span>
+                                <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
+                                    <span className="text-sm font-medium text-muted-foreground">Current Revenue</span>
+                                    <span className="text-lg font-bold text-primary">฿{(metrics?.monthlyRevenue || 0).toLocaleString()}</span>
                                 </div>
                             </div>
                         </CardContent>
@@ -169,13 +187,13 @@ export default function Home() {
                         <h3 className="mb-4 text-xl font-semibold">Quick Actions</h3>
                         <div className="grid gap-4">
                             <Link href="/pos">
-                                <Card className="glass-hover cursor-pointer border-0 transition-all hover:scale-105">
-                                    <CardContent className="flex items-center gap-4 p-6">
-                                        <div className="rounded-lg bg-primary/10 p-3 text-primary">
+                                <Card className="bg-white border-0 rounded-friendly card-shadow hover:card-shadow-hover transition-all hover:scale-[1.02] cursor-pointer group">
+                                    <CardContent className="flex items-center gap-4 p-5">
+                                        <div className="rounded-xl bg-pastel-peach p-3 text-secondary group-hover:scale-110 transition-transform">
                                             <Scissors className="h-6 w-6" />
                                         </div>
                                         <div>
-                                            <h4 className="font-semibold">New Sale</h4>
+                                            <h4 className="font-bold text-foreground">New Sale</h4>
                                             <p className="text-sm text-muted-foreground">Start POS terminal</p>
                                         </div>
                                     </CardContent>
@@ -183,13 +201,13 @@ export default function Home() {
                             </Link>
 
                             <Link href="/customers">
-                                <Card className="glass-hover cursor-pointer border-0 transition-all hover:scale-105">
-                                    <CardContent className="flex items-center gap-4 p-6">
-                                        <div className="rounded-lg bg-primary/10 p-3 text-primary">
+                                <Card className="bg-white border-0 rounded-friendly card-shadow hover:card-shadow-hover transition-all hover:scale-[1.02] cursor-pointer group">
+                                    <CardContent className="flex items-center gap-4 p-5">
+                                        <div className="rounded-xl bg-pastel-lavender p-3 text-primary group-hover:scale-110 transition-transform">
                                             <UserPlus className="h-6 w-6" />
                                         </div>
                                         <div>
-                                            <h4 className="font-semibold">Register Customer</h4>
+                                            <h4 className="font-bold text-foreground">Register Customer</h4>
                                             <p className="text-sm text-muted-foreground">Add new client</p>
                                         </div>
                                     </CardContent>
@@ -197,13 +215,13 @@ export default function Home() {
                             </Link>
 
                             <Link href="/services">
-                                <Card className="glass-hover cursor-pointer border-0 transition-all hover:scale-105">
-                                    <CardContent className="flex items-center gap-4 p-6">
-                                        <div className="rounded-lg bg-primary/10 p-3 text-primary">
+                                <Card className="bg-white border-0 rounded-friendly card-shadow hover:card-shadow-hover transition-all hover:scale-[1.02] cursor-pointer group">
+                                    <CardContent className="flex items-center gap-4 p-5">
+                                        <div className="rounded-xl bg-pastel-coral p-3 text-accent-foreground group-hover:scale-110 transition-transform">
                                             <CalendarDays className="h-6 w-6" />
                                         </div>
                                         <div>
-                                            <h4 className="font-semibold">Manage Services</h4>
+                                            <h4 className="font-bold text-foreground">Manage Services</h4>
                                             <p className="text-sm text-muted-foreground">View & edit catalog</p>
                                         </div>
                                     </CardContent>
@@ -222,7 +240,8 @@ export default function Home() {
                     <UpcomingAppointments />
 
                     {/* Recent Activity */}
-                    <Card className="glass border-0">
+                    {/* Recent Activity */}
+                    <Card className="bg-white border-0 rounded-friendly card-shadow">
                         <CardHeader>
                             <CardTitle>Recent Activity</CardTitle>
                         </CardHeader>
@@ -230,13 +249,13 @@ export default function Home() {
                             {metrics?.recentTransactions && metrics.recentTransactions.length > 0 ? (
                                 <div className="space-y-4">
                                     {metrics.recentTransactions.slice(0, 5).map((transaction: any) => (
-                                        <div key={transaction.id} className="flex items-center justify-between border-b border-white/10 pb-4 last:border-0 last:pb-0">
+                                        <div key={transaction.id} className="flex items-center justify-between border-b border-slate-50 pb-4 last:border-0 last:pb-0 hover:bg-slate-50/50 p-2 rounded-lg transition-colors">
                                             <div className="flex items-center gap-3">
-                                                <div className="rounded-lg bg-primary/10 p-2">
+                                                <div className="rounded-xl bg-pastel-lavender p-2">
                                                     <Scissors className="h-4 w-4 text-primary" />
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-sm">
+                                                    <p className="font-bold text-sm text-foreground">
                                                         {transaction.items.map((item: any) => item.service.name).join(', ')}
                                                     </p>
                                                     <p className="text-xs text-muted-foreground">
@@ -245,7 +264,7 @@ export default function Home() {
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className="font-bold text-sm">฿{Number(transaction.totalAmount).toFixed(2)}</p>
+                                                <p className="font-bold text-sm text-primary">฿{Number(transaction.totalAmount).toFixed(2)}</p>
                                                 <p className="text-xs text-muted-foreground">
                                                     {new Date(transaction.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                                                 </p>

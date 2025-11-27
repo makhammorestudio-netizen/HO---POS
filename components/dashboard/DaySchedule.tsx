@@ -48,10 +48,10 @@ export function DaySchedule() {
 
     const getCategoryColor = (category: string) => {
         switch (category) {
-            case 'HAIR': return 'bg-blue-500/20 border-blue-500/50 text-blue-300';
-            case 'NAIL': return 'bg-pink-500/20 border-pink-500/50 text-pink-300';
-            case 'LASH': return 'bg-purple-500/20 border-purple-500/50 text-purple-300';
-            default: return 'bg-gray-500/20 border-gray-500/50 text-gray-300';
+            case 'HAIR': return 'bg-pastel-lavender border-indigo-100 text-primary';
+            case 'NAIL': return 'bg-pastel-peach border-orange-100 text-orange-800';
+            case 'LASH': return 'bg-pastel-coral border-red-100 text-red-800';
+            default: return 'bg-slate-100 border-slate-200 text-slate-700';
         }
     };
 
@@ -96,38 +96,44 @@ export function DaySchedule() {
     const isToday = selectedDate.toDateString() === new Date().toDateString();
 
     return (
-        <Card className="glass border-0">
-            <CardHeader className="pb-3">
+        <Card className="bg-white border-0 rounded-friendly card-shadow h-full">
+            <CardHeader className="pb-3 border-b border-slate-50">
                 <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">Day Schedule</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                        Day Schedule
+                    </CardTitle>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={previousDay}>
+                        <Button variant="ghost" size="icon" onClick={previousDay} className="h-8 w-8 hover:bg-slate-100 rounded-full">
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
                         <Button
-                            variant={isToday ? "default" : "outline"}
+                            variant={isToday ? "default" : "ghost"}
                             size="sm"
                             onClick={goToToday}
-                            className="min-w-[80px]"
+                            className={cn(
+                                "min-w-[100px] rounded-full font-medium",
+                                isToday ? "bg-primary text-white shadow-md hover:bg-primary/90" : "hover:bg-slate-100"
+                            )}
                         >
                             {isToday ? 'Today' : selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </Button>
-                        <Button variant="outline" size="sm" onClick={nextDay}>
+                        <Button variant="ghost" size="icon" onClick={nextDay} className="h-8 w-8 hover:bg-slate-100 rounded-full">
                             <ChevronRight className="h-4 w-4" />
                         </Button>
                     </div>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground font-medium pl-4">
                     {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                 </p>
             </CardHeader>
-            <CardContent>
-                <div className="relative">
+            <CardContent className="p-0">
+                <div className="relative h-[600px] overflow-y-auto custom-scrollbar">
                     {/* Timeline */}
-                    <div className="space-y-0">
+                    <div className="space-y-0 pt-4">
                         {hours.map((hour, index) => (
-                            <div key={hour} className="relative h-[60px] border-t border-white/5">
-                                <span className="absolute -top-2 left-0 text-xs text-muted-foreground bg-background px-1">
+                            <div key={hour} className="relative h-[60px] border-t border-slate-100">
+                                <span className="absolute -top-2.5 left-4 text-xs font-medium text-muted-foreground bg-white px-1">
                                     {hour}
                                 </span>
                             </div>
@@ -135,7 +141,7 @@ export function DaySchedule() {
                     </div>
 
                     {/* Appointments */}
-                    <div className="absolute top-0 left-16 right-0 bottom-0">
+                    <div className="absolute top-4 left-20 right-4 bottom-0">
                         {appointments.map((apt) => {
                             const position = getAppointmentPosition(apt.scheduledAt, apt.service.durationMin);
                             return (
@@ -143,15 +149,23 @@ export function DaySchedule() {
                                     key={apt.id}
                                     onClick={() => router.push(`/appointments/${apt.id}`)}
                                     className={cn(
-                                        "absolute left-0 right-0 mx-1 rounded-lg border p-2 cursor-pointer transition-all hover:brightness-110",
+                                        "absolute left-0 right-0 mx-1 rounded-xl border p-3 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md group",
                                         getCategoryColor(apt.service.category)
                                     )}
                                     style={position}
                                 >
-                                    <div className="text-sm font-medium truncate">{apt.service.name}</div>
-                                    <div className="text-xs opacity-80 truncate">{apt.customerName}</div>
+                                    <div className="flex justify-between items-start">
+                                        <div className="font-bold text-sm truncate">{apt.service.name}</div>
+                                        <div className="text-[10px] font-bold opacity-70 bg-white/50 px-1.5 py-0.5 rounded-full">
+                                            {apt.service.durationMin}m
+                                        </div>
+                                    </div>
+                                    <div className="text-xs font-medium opacity-90 truncate mt-0.5">{apt.customerName}</div>
                                     {apt.staff && (
-                                        <div className="text-xs opacity-60 truncate">{apt.staff.name}</div>
+                                        <div className="text-xs opacity-70 truncate mt-1 flex items-center gap-1">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-current" />
+                                            {apt.staff.name}
+                                        </div>
                                     )}
                                 </div>
                             );

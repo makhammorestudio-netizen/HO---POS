@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
     Dialog,
     DialogContent,
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { ChevronLeft, ChevronRight, Plus, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AppointmentForm } from '@/components/appointments/AppointmentForm';
 
 interface Appointment {
     id: string;
@@ -47,25 +48,15 @@ interface Staff {
 }
 
 export default function AppointmentsPage() {
+    const router = useRouter();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [services, setServices] = useState<Service[]>([]);
     const [staff, setStaff] = useState<Staff[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
-    // Form state
-    const [formData, setFormData] = useState({
-        customerName: '',
-        customerPhone: '',
-        serviceId: '',
-        staffId: '',
-        date: '',
-        time: '',
-        deposit: '',
-        notes: ''
-    });
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    const [viewMode, setViewMode] = useState<'list' | 'create'>('list');
 
     useEffect(() => {
         fetchAppointments();
@@ -114,50 +105,25 @@ export default function AppointmentsPage() {
 
     const handleDateClick = (date: Date) => {
         setSelectedDate(date);
-        const dateStr = date.toISOString().split('T')[0];
-        setFormData({ ...formData, date: dateStr });
+        setViewMode('list');
         setIsDialogOpen(true);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleAppointmentClick = (e: React.MouseEvent, apt: Appointment) => {
+        e.stopPropagation();
+        router.push(`/appointments/${apt.id}`);
+    };
 
-        const scheduledAt = new Date(`${formData.date}T${formData.time}`);
-
-        // Add "Khun" prefix if not already present
-        let customerName = formData.customerName.trim();
-        if (!customerName.toLowerCase().startsWith('khun ')) {
-            customerName = `Khun ${customerName}`;
-        }
-
+    const handleCreate = async (data: any) => {
         try {
             const res = await fetch('/api/appointments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    customerName: customerName,
-                    customerPhone: formData.customerPhone,
-                    serviceId: formData.serviceId,
-                    staffId: formData.staffId || null,
-                    scheduledAt: scheduledAt.toISOString(),
-                    deposit: parseFloat(formData.deposit) || 0,
-                    notes: formData.notes
-                })
+                body: JSON.stringify(data)
             });
 
             if (res.ok) {
                 setIsDialogOpen(false);
-                setFormData({
-                    customerName: '',
-                    customerPhone: '',
-                    serviceId: '',
-                    staffId: '',
-                    date: '',
-                    time: '',
-                    deposit: '',
-                    notes: ''
-                });
-                setSelectedDate(null);
                 fetchAppointments();
             } else {
                 alert('Failed to create appointment');
@@ -194,12 +160,14 @@ export default function AppointmentsPage() {
     const getAppointmentsForDay = (date: Date | null) => {
         if (!date) return [];
 
-        return appointments.filter(apt => {
-            const aptDate = new Date(apt.scheduledAt);
-            return aptDate.getDate() === date.getDate() &&
-                aptDate.getMonth() === date.getMonth() &&
-                aptDate.getFullYear() === date.getFullYear();
-        });
+        return appointments
+            .filter(apt => {
+                const aptDate = new Date(apt.scheduledAt);
+                return aptDate.getDate() === date.getDate() &&
+                    aptDate.getMonth() === date.getMonth() &&
+                    aptDate.getFullYear() === date.getFullYear();
+            })
+            .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
     };
 
     const getCategoryColor = (category: string) => {
@@ -221,11 +189,12 @@ export default function AppointmentsPage() {
 
     const monthYear = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     const days = getDaysInMonth();
+    const selectedDateAppointments = getAppointmentsForDay(selectedDate);
 
     return (
-        <div className="space-y-6">
+        <div className="flex h-[calc(100vh-6rem)] flex-col gap-4">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between shrink-0">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">Appointments</h2>
                     <p className="text-muted-foreground">Manage your salon bookings</p>
@@ -233,126 +202,83 @@ export default function AppointmentsPage() {
 
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
-                        <Button className="gap-2">
+                        <Button className="gap-2" onClick={() => {
+                            setSelectedDate(new Date());
+                            setViewMode('create');
+                        }}>
                             <Plus className="h-4 w-4" />
                             Add Appointment
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[500px]">
                         <DialogHeader>
-                            <DialogTitle>New Appointment</DialogTitle>
+                            <DialogTitle>
+                                {viewMode === 'create' ? 'New Appointment' :
+                                    selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                            </DialogTitle>
                         </DialogHeader>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid gap-4">
-                                <div className="grid gap-2">
-                                    <label className="text-sm font-medium">Customer Name</label>
-                                    <Input
-                                        required
-                                        value={formData.customerName}
-                                        onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                                        placeholder="Enter name (Khun will be added automatically)"
-                                    />
+
+                        {viewMode === 'list' ? (
+                            <div className="space-y-4">
+                                <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                                    {selectedDateAppointments.length > 0 ? (
+                                        selectedDateAppointments.map(apt => (
+                                            <div
+                                                key={apt.id}
+                                                onClick={() => router.push(`/appointments/${apt.id}`)}
+                                                className={cn(
+                                                    "flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50 cursor-pointer",
+                                                    getCategoryColor(apt.service.category)
+                                                )}
+                                            >
+                                                <div>
+                                                    <div className="font-medium">{apt.customerName}</div>
+                                                    <div className="text-sm opacity-80">{apt.service.name}</div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-1 text-sm opacity-80">
+                                                        <Clock className="h-3 w-3" />
+                                                        {new Date(apt.scheduledAt).toLocaleTimeString('en-US', {
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-center py-8 text-muted-foreground">
+                                            No appointments for this day
+                                        </div>
+                                    )}
                                 </div>
-
-                                <div className="grid gap-2">
-                                    <label className="text-sm font-medium">Phone Number</label>
-                                    <Input
-                                        required
-                                        value={formData.customerPhone}
-                                        onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-                                        placeholder="Enter phone number"
-                                    />
-                                </div>
-
-                                <div className="grid gap-2">
-                                    <label className="text-sm font-medium">Service</label>
-                                    <select
-                                        required
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                        value={formData.serviceId}
-                                        onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })}
-                                    >
-                                        <option value="">Select service</option>
-                                        {services.map(service => (
-                                            <option key={service.id} value={service.id}>
-                                                {service.name} - ฿{Number(service.price).toFixed(0)}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="grid gap-2">
-                                    <label className="text-sm font-medium">Staff (Optional)</label>
-                                    <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                        value={formData.staffId}
-                                        onChange={(e) => setFormData({ ...formData, staffId: e.target.value })}
-                                    >
-                                        <option value="">No preference</option>
-                                        {staff.map(s => (
-                                            <option key={s.id} value={s.id}>{s.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="grid gap-2">
-                                        <label className="text-sm font-medium">Date</label>
-                                        <Input
-                                            required
-                                            type="date"
-                                            value={formData.date}
-                                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                        />
-                                    </div>
-
-                                    <div className="grid gap-2">
-                                        <label className="text-sm font-medium">Time</label>
-                                        <Input
-                                            required
-                                            type="time"
-                                            value={formData.time}
-                                            onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid gap-2">
-                                    <label className="text-sm font-medium">Deposit (฿)</label>
-                                    <Input
-                                        type="number"
-                                        step="0.01"
-                                        value={formData.deposit}
-                                        onChange={(e) => setFormData({ ...formData, deposit: e.target.value })}
-                                        placeholder="0.00"
-                                    />
-                                </div>
-
-                                <div className="grid gap-2">
-                                    <label className="text-sm font-medium">Notes</label>
-                                    <textarea
-                                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                        value={formData.notes}
-                                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                        placeholder="Additional notes..."
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex justify-end gap-2">
-                                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                                    Cancel
+                                <Button className="w-full" onClick={() => setViewMode('create')}>
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Add Appointment
                                 </Button>
-                                <Button type="submit">Create Appointment</Button>
                             </div>
-                        </form>
+                        ) : (
+                            <AppointmentForm
+                                initialData={{ scheduledAt: selectedDate.toISOString() }}
+                                services={services}
+                                staff={staff}
+                                onSubmit={handleCreate}
+                                onCancel={() => {
+                                    if (selectedDate) {
+                                        setViewMode('list');
+                                    } else {
+                                        setIsDialogOpen(false);
+                                    }
+                                }}
+                            />
+                        )}
                     </DialogContent>
                 </Dialog>
             </div>
 
             {/* Calendar */}
-            <Card className="glass border-0">
-                <CardHeader>
+            <Card className="glass border-0 flex-1 flex flex-col min-h-0">
+                <CardHeader className="shrink-0 py-4">
                     <div className="flex items-center justify-between">
                         <CardTitle>{monthYear}</CardTitle>
                         <div className="flex gap-2">
@@ -365,9 +291,9 @@ export default function AppointmentsPage() {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="p-4">
+                <CardContent className="p-4 pt-0 flex-1 flex flex-col min-h-0">
                     {/* Day headers */}
-                    <div className="grid grid-cols-7 gap-2 mb-2">
+                    <div className="grid grid-cols-7 gap-2 mb-2 shrink-0">
                         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                             <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
                                 {day}
@@ -375,8 +301,8 @@ export default function AppointmentsPage() {
                         ))}
                     </div>
 
-                    {/* Calendar grid - Fixed height to show all weeks */}
-                    <div className="grid grid-cols-7 gap-2">
+                    {/* Calendar grid */}
+                    <div className="grid grid-cols-7 grid-rows-6 gap-2 flex-1 min-h-0">
                         {days.map((date, index) => {
                             const dayAppointments = getAppointmentsForDay(date);
                             const isToday = date &&
@@ -389,7 +315,7 @@ export default function AppointmentsPage() {
                                     key={index}
                                     onClick={() => date && handleDateClick(date)}
                                     className={cn(
-                                        "min-h-[100px] rounded-lg border border-white/10 bg-white/5 p-2 transition-all",
+                                        "relative flex flex-col rounded-lg border border-white/10 bg-white/5 p-1 transition-all overflow-hidden",
                                         !date && "opacity-0 pointer-events-none",
                                         date && "cursor-pointer hover:bg-white/10 hover:border-primary/50",
                                         isToday && "border-primary bg-primary/5"
@@ -398,23 +324,24 @@ export default function AppointmentsPage() {
                                     {date && (
                                         <>
                                             <div className={cn(
-                                                "text-sm font-medium mb-2",
+                                                "text-xs font-medium mb-1 shrink-0 px-1",
                                                 isToday && "text-primary"
                                             )}>
                                                 {date.getDate()}
                                             </div>
-                                            <div className="space-y-1">
+                                            <div className="flex-1 flex flex-col gap-1 min-h-0 px-1 pb-1">
                                                 {dayAppointments.slice(0, 2).map(apt => (
                                                     <div
                                                         key={apt.id}
+                                                        onClick={(e) => handleAppointmentClick(e, apt)}
                                                         className={cn(
-                                                            "rounded border p-1 text-xs",
+                                                            "shrink-0 rounded border p-1 text-[10px] transition-colors hover:brightness-110 cursor-pointer z-10",
                                                             getCategoryColor(apt.service.category)
                                                         )}
                                                     >
                                                         <div className="font-medium truncate">{apt.customerName}</div>
-                                                        <div className="flex items-center gap-1 text-[10px] opacity-80">
-                                                            <Clock className="h-2.5 w-2.5" />
+                                                        <div className="flex items-center gap-1 opacity-80">
+                                                            <Clock className="h-2 w-2" />
                                                             {new Date(apt.scheduledAt).toLocaleTimeString('en-US', {
                                                                 hour: '2-digit',
                                                                 minute: '2-digit'
@@ -423,7 +350,7 @@ export default function AppointmentsPage() {
                                                     </div>
                                                 ))}
                                                 {dayAppointments.length > 2 && (
-                                                    <div className="text-[10px] text-muted-foreground text-center">
+                                                    <div className="text-[10px] text-muted-foreground text-center font-medium mt-auto">
                                                         +{dayAppointments.length - 2} more
                                                     </div>
                                                 )}

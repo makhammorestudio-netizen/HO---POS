@@ -15,7 +15,8 @@ import {
     Scissors,
     Sparkles,
     Eye,
-    Package
+    Package,
+    Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -38,6 +39,7 @@ interface CartItem {
     service: Service;
     primaryStaffId: string;
     assistantStaffId?: string;
+    price: number; // Editable price
 }
 
 const CATEGORIES = [
@@ -57,6 +59,8 @@ export default function POSPage() {
     const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CREDIT_CARD' | 'TRANSFER' | 'GOWABI'>('CASH');
     const [note, setNote] = useState('');
     const [isCheckingOut, setIsCheckingOut] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
 
     // Fetch data
     useEffect(() => {
@@ -75,6 +79,7 @@ export default function POSPage() {
                 }
             } catch (error) {
                 console.error("Failed to fetch data", error);
+                setError("Failed to load services or staff. Please refresh.");
             }
         };
         fetchData();
@@ -83,7 +88,12 @@ export default function POSPage() {
     const addToCart = (service: Service) => {
         // Default to first stylist found
         const defaultStylist = staff.find(s => s.role === 'STYLIST')?.id || '';
-        setCart([...cart, { service, primaryStaffId: defaultStylist }]);
+        setCart([...cart, {
+            service,
+            primaryStaffId: defaultStylist,
+            price: Number(service.price) // Initialize with service base price
+        }]);
+        setSuccess(null);
     };
 
     const removeFromCart = (index: number) => {
@@ -98,11 +108,22 @@ export default function POSPage() {
         setCart(newCart);
     };
 
-    const totalAmount = cart.reduce((sum, item) => sum + Number(item.service.price), 0);
+    const updateItemPrice = (index: number, value: string) => {
+        const newPrice = parseFloat(value);
+        if (!isNaN(newPrice) && newPrice >= 0) {
+            const newCart = [...cart];
+            newCart[index] = { ...newCart[index], price: newPrice };
+            setCart(newCart);
+        }
+    };
+
+    const totalAmount = cart.reduce((sum, item) => sum + item.price, 0);
 
     const handleCheckout = async () => {
         if (cart.length === 0) return;
         setIsCheckingOut(true);
+        setError(null);
+        setSuccess(null);
 
         try {
             const res = await fetch('/api/transactions', {
@@ -111,7 +132,7 @@ export default function POSPage() {
                 body: JSON.stringify({
                     items: cart.map(item => ({
                         serviceId: item.service.id,
-                        price: item.service.price,
+                        price: item.price,
                         primaryStaffId: item.primaryStaffId,
                         assistantStaffId: item.assistantStaffId
                     })),
@@ -121,16 +142,19 @@ export default function POSPage() {
             });
 
             if (res.ok) {
-                alert('Transaction completed!');
+                setSuccess('Transaction saved successfully!');
                 setCart([]);
                 setNote('');
                 setPaymentMethod('CASH');
+                // Clear success message after 3 seconds
+                setTimeout(() => setSuccess(null), 3000);
             } else {
-                alert('Checkout failed');
+                const data = await res.json();
+                setError(data.error || 'Unable to save sale, please try again.');
             }
         } catch (e) {
             console.error(e);
-            alert('Error processing transaction');
+            setError('Unable to save sale, please try again.');
         } finally {
             setIsCheckingOut(false);
         }
@@ -218,6 +242,18 @@ export default function POSPage() {
                     <p className="text-sm text-muted-foreground">{cart.length} items</p>
                 </div>
 
+                {/* Notifications */}
+                {error && (
+                    <div className="mx-6 mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-500 border border-red-500/20">
+                        {error}
+                    </div>
+                )}
+                {success && (
+                    <div className="mx-6 mt-4 rounded-lg bg-green-500/10 p-3 text-sm text-green-500 border border-green-500/20">
+                        {success}
+                    </div>
+                )}
+
                 {/* Cart Items */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     {cart.length === 0 ? (
@@ -228,9 +264,17 @@ export default function POSPage() {
                     ) : (
                         cart.map((item, index) => (
                             <div key={index} className="rounded-lg border border-white/10 bg-white/5 p-3">
-                                <div className="flex justify-between mb-2">
+                                <div className="flex justify-between items-start mb-2">
                                     <span className="font-medium">{item.service.name}</span>
-                                    <span className="font-bold">฿{Number(item.service.price).toFixed(2)}</span>
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-xs text-muted-foreground">฿</span>
+                                        <Input
+                                            type="number"
+                                            className="h-7 w-20 px-1 py-0 text-right font-bold bg-black/20 border-white/10"
+                                            value={item.price}
+                                            onChange={(e) => updateItemPrice(index, e.target.value)}
+                                        />
+                                    </div>
                                 </div>
 
                                 {/* Staff Selection */}
@@ -313,7 +357,14 @@ export default function POSPage() {
                         onClick={handleCheckout}
                         disabled={cart.length === 0 || isCheckingOut}
                     >
-                        {isCheckingOut ? 'Processing...' : 'Checkout'}
+                        {isCheckingOut ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Saving...
+                            </>
+                        ) : (
+                            'Checkout'
+                        )}
                     </Button>
                 </div>
             </div>

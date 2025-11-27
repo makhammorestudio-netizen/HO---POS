@@ -56,19 +56,19 @@ export function UpcomingAppointments() {
 
     const getCategoryColor = (category: string) => {
         switch (category) {
-            case 'HAIR': return 'bg-blue-500/20 border-blue-500/50 text-blue-300';
-            case 'NAIL': return 'bg-pink-500/20 border-pink-500/50 text-pink-300';
-            case 'LASH': return 'bg-purple-500/20 border-purple-500/50 text-purple-300';
-            default: return 'bg-gray-500/20 border-gray-500/50 text-gray-300';
+            case 'HAIR': return 'bg-pastel-lavender/50 border-indigo-100 hover:bg-pastel-lavender';
+            case 'NAIL': return 'bg-pastel-peach/50 border-orange-100 hover:bg-pastel-peach';
+            case 'LASH': return 'bg-pastel-coral/50 border-red-100 hover:bg-pastel-coral';
+            default: return 'bg-slate-50 border-slate-100 hover:bg-slate-100';
         }
     };
 
     const getPriceColor = (category: string) => {
         switch (category) {
-            case 'HAIR': return 'text-blue-400';
-            case 'NAIL': return 'text-pink-400';
-            case 'LASH': return 'text-purple-400';
-            default: return 'text-yellow-400';
+            case 'HAIR': return 'text-primary';
+            case 'NAIL': return 'text-orange-600';
+            case 'LASH': return 'text-red-600';
+            default: return 'text-slate-600';
         }
     };
 
@@ -128,28 +128,30 @@ export function UpcomingAppointments() {
     const monthYear = selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
     return (
-        <Card className="glass border-0">
-            <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Upcoming Appointments</CardTitle>
+        <Card className="bg-white border-0 rounded-friendly card-shadow h-full">
+            <CardHeader className="pb-3 border-b border-slate-50">
+                <CardTitle className="text-lg flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-primary" />
+                    Upcoming Appointments
+                </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-4">
                 {/* Compact Week Calendar */}
-                <div className="rounded-lg border border-white/10 bg-white/5 p-3">
-                    <div className="flex items-center justify-between mb-3">
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={previousWeek}>
-                            <ChevronLeft className="h-3 w-3" />
+                <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
+                    <div className="flex items-center justify-between mb-4">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white rounded-full" onClick={previousWeek}>
+                            <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-medium">{monthYear}</span>
+                        <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow-sm border border-slate-100">
+                            <span className="text-sm font-bold text-primary">{monthYear}</span>
                         </div>
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={nextWeek}>
-                            <ChevronRight className="h-3 w-3" />
+                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white rounded-full" onClick={nextWeek}>
+                            <ChevronRight className="h-4 w-4" />
                         </Button>
                     </div>
 
                     {/* Week Days Horizontal */}
-                    <div className="flex justify-between gap-2">
+                    <div className="flex justify-between gap-1">
                         {weekDays.map((date, index) => {
                             const isSelected =
                                 date.getDate() === selectedDate.getDate() &&
@@ -166,14 +168,15 @@ export function UpcomingAppointments() {
                                     key={index}
                                     onClick={() => setSelectedDate(date)}
                                     className={cn(
-                                        "flex flex-col items-center justify-center rounded-lg p-2 min-w-[50px] transition-colors",
-                                        isSelected && "bg-primary text-primary-foreground font-semibold",
-                                        !isSelected && "hover:bg-white/10",
-                                        isToday && !isSelected && "border border-primary/50"
+                                        "flex flex-col items-center justify-center rounded-xl p-2 min-w-[45px] transition-all duration-200",
+                                        isSelected
+                                            ? "bg-primary text-white shadow-md scale-105"
+                                            : "hover:bg-white hover:shadow-sm text-muted-foreground",
+                                        isToday && !isSelected && "bg-white text-primary font-bold border border-primary/20"
                                     )}
                                 >
-                                    <span className="text-xs opacity-70">{dayName}</span>
-                                    <span className="text-lg font-semibold">{date.getDate()}</span>
+                                    <span className="text-[10px] font-medium uppercase tracking-wider opacity-80">{dayName}</span>
+                                    <span className="text-lg font-bold">{date.getDate()}</span>
                                 </button>
                             );
                         })}
@@ -181,46 +184,52 @@ export function UpcomingAppointments() {
                 </div>
 
                 {/* Appointments List */}
-                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
                     {appointments.length > 0 ? (
                         appointments.map((apt) => (
                             <div
                                 key={apt.id}
                                 onClick={() => router.push(`/appointments/${apt.id}`)}
                                 className={cn(
-                                    "flex items-center gap-3 rounded-lg border p-3 transition-all hover:bg-white/5 cursor-pointer",
+                                    "flex items-center gap-4 rounded-2xl border p-4 transition-all cursor-pointer group",
                                     getCategoryColor(apt.service.category)
                                 )}
                             >
-                                <Avatar className="h-10 w-10 shrink-0">
-                                    <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                                <Avatar className="h-12 w-12 shrink-0 border-2 border-white shadow-sm">
+                                    <AvatarFallback className="bg-white text-primary font-bold">
                                         {getInitials(apt.customerName)}
                                     </AvatarFallback>
                                 </Avatar>
 
                                 <div className="flex-1 min-w-0">
-                                    <div className="font-medium truncate">{apt.customerName}</div>
-                                    <div className="text-sm opacity-80 truncate">{apt.service.name}</div>
-                                    <div className="flex items-center gap-2 text-xs opacity-60 mt-1">
-                                        <Clock className="h-3 w-3" />
-                                        <span>{formatTimeRange(apt.scheduledAt, apt.service.durationMin)}</span>
+                                    <div className="font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                                        {apt.customerName}
+                                    </div>
+                                    <div className="text-sm font-medium opacity-80 truncate">{apt.service.name}</div>
+                                    <div className="flex items-center gap-3 text-xs font-medium opacity-60 mt-1.5">
+                                        <div className="flex items-center gap-1 bg-white/50 px-2 py-0.5 rounded-full">
+                                            <Clock className="h-3 w-3" />
+                                            <span>{formatTimeRange(apt.scheduledAt, apt.service.durationMin)}</span>
+                                        </div>
                                         {apt.staff && (
-                                            <>
-                                                <span>•</span>
+                                            <div className="flex items-center gap-1">
+                                                <div className="w-1 h-1 rounded-full bg-current" />
                                                 <span>{apt.staff.name}</span>
-                                            </>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
 
-                                <div className={cn("font-bold text-lg shrink-0", getPriceColor(apt.service.category))}>
+                                <div className={cn("font-bold text-lg shrink-0 bg-white/50 px-3 py-1 rounded-lg", getPriceColor(apt.service.category))}>
                                     ${apt.service.price}
                                 </div>
                             </div>
                         ))
                     ) : (
-                        <div className="text-center py-8 text-muted-foreground">
-                            No appointments for this day
+                        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                            <Calendar className="h-10 w-10 opacity-20 mb-3" />
+                            <p className="font-medium">No appointments</p>
+                            <p className="text-xs opacity-60">Enjoy your free time!</p>
                         </div>
                     )}
                 </div>

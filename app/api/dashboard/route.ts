@@ -53,12 +53,33 @@ export async function GET() {
             }
         });
 
+        // Today's Appointments
+        const todayAppointments = await prisma.appointment.findMany({
+            where: {
+                scheduledAt: {
+                    gte: startOfToday,
+                    lt: new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000)
+                },
+                status: {
+                    not: 'CANCELLED'
+                }
+            },
+            orderBy: {
+                scheduledAt: 'asc'
+            },
+            include: {
+                service: true,
+                staff: true
+            }
+        });
+
         return NextResponse.json({
             monthlyRevenue: Number(monthlyTransactions._sum.totalAmount || 0),
             todayTransactions: todayCount,
             totalStaff: staffCount,
             totalCustomers: customerCount,
-            recentTransactions
+            recentTransactions,
+            todayAppointments
         });
     } catch (error) {
         console.error('Dashboard metrics error:', error);

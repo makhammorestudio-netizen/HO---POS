@@ -1,0 +1,212 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Trash2 } from 'lucide-react';
+
+interface Service {
+    id: string;
+    name: string;
+    category: string;
+    price: number;
+}
+
+interface Staff {
+    id: string;
+    name: string;
+}
+
+interface AppointmentFormProps {
+    initialData?: any;
+    services: Service[];
+    staff: Staff[];
+    onSubmit: (data: any) => void;
+    onDelete?: () => void;
+    onCancel: () => void;
+    isSubmitting?: boolean;
+}
+
+export function AppointmentForm({
+    initialData,
+    services,
+    staff,
+    onSubmit,
+    onDelete,
+    onCancel,
+    isSubmitting = false
+}: AppointmentFormProps) {
+    const [formData, setFormData] = useState({
+        customerName: '',
+        customerPhone: '',
+        serviceId: '',
+        staffId: '',
+        date: '',
+        time: '',
+        deposit: '',
+        notes: ''
+    });
+
+    useEffect(() => {
+        if (initialData) {
+            const date = new Date(initialData.scheduledAt);
+            setFormData({
+                customerName: initialData.customerName,
+                customerPhone: initialData.customerPhone,
+                serviceId: initialData.serviceId || initialData.service?.id || '',
+                staffId: initialData.staffId || initialData.staff?.id || '',
+                date: date.toISOString().split('T')[0],
+                time: date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+                deposit: initialData.deposit?.toString() || '',
+                notes: initialData.notes || ''
+            });
+        } else {
+            // Default to today/now if no initial data
+            setFormData(prev => ({
+                ...prev,
+                date: new Date().toISOString().split('T')[0]
+            }));
+        }
+    }, [initialData]);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const scheduledAt = new Date(`${formData.date}T${formData.time}`);
+
+        // Add "Khun" prefix if not already present
+        let customerName = formData.customerName.trim();
+        if (customerName && !customerName.toLowerCase().startsWith('khun ')) {
+            customerName = `Khun ${customerName}`;
+        }
+
+        const payload = {
+            customerName,
+            customerPhone: formData.customerPhone,
+            serviceId: formData.serviceId,
+            staffId: formData.staffId || null,
+            scheduledAt: scheduledAt.toISOString(),
+            deposit: parseFloat(formData.deposit) || 0,
+            notes: formData.notes
+        };
+
+        onSubmit(payload);
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid gap-4">
+                <div className="grid gap-2">
+                    <label className="text-sm font-medium">Customer Name</label>
+                    <Input
+                        required
+                        value={formData.customerName}
+                        onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                        placeholder="Enter name (Khun will be added automatically)"
+                    />
+                </div>
+
+                <div className="grid gap-2">
+                    <label className="text-sm font-medium">Phone Number</label>
+                    <Input
+                        required
+                        value={formData.customerPhone}
+                        onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+                        placeholder="Enter phone number"
+                    />
+                </div>
+
+                <div className="grid gap-2">
+                    <label className="text-sm font-medium">Service</label>
+                    <select
+                        required
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={formData.serviceId}
+                        onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })}
+                    >
+                        <option value="">Select service</option>
+                        {services.map(service => (
+                            <option key={service.id} value={service.id}>
+                                {service.name} - ฿{Number(service.price).toFixed(0)}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="grid gap-2">
+                    <label className="text-sm font-medium">Staff (Optional)</label>
+                    <select
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={formData.staffId}
+                        onChange={(e) => setFormData({ ...formData, staffId: e.target.value })}
+                    >
+                        <option value="">No preference</option>
+                        {staff.map(s => (
+                            <option key={s.id} value={s.id}>{s.name}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                        <label className="text-sm font-medium">Date</label>
+                        <Input
+                            required
+                            type="date"
+                            value={formData.date}
+                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <label className="text-sm font-medium">Time</label>
+                        <Input
+                            required
+                            type="time"
+                            value={formData.time}
+                            onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                        />
+                    </div>
+                </div>
+
+                <div className="grid gap-2">
+                    <label className="text-sm font-medium">Deposit (฿)</label>
+                    <Input
+                        type="number"
+                        step="0.01"
+                        value={formData.deposit}
+                        onChange={(e) => setFormData({ ...formData, deposit: e.target.value })}
+                        placeholder="0.00"
+                    />
+                </div>
+
+                <div className="grid gap-2">
+                    <label className="text-sm font-medium">Notes</label>
+                    <textarea
+                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={formData.notes}
+                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        placeholder="Additional notes..."
+                    />
+                </div>
+            </div>
+
+            <div className="flex justify-between gap-2 pt-4">
+                {initialData && onDelete && (
+                    <Button type="button" variant="destructive" onClick={onDelete} disabled={isSubmitting}>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                    </Button>
+                )}
+                <div className="flex gap-2 ml-auto">
+                    <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+                        Cancel
+                    </Button>
+                    <Button type="submit" disabled={isSubmitting}>
+                        {initialData ? 'Save Changes' : 'Create Appointment'}
+                    </Button>
+                </div>
+            </div>
+        </form>
+    );
+}

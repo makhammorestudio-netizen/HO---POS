@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Role } from "@prisma/client";
+import { cn } from "@/lib/utils";
 
 interface Staff {
     id: string;
@@ -15,6 +19,9 @@ interface Staff {
 export default function StaffPage() {
     const [staffList, setStaffList] = useState<Staff[]>([]);
     const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState("");
+    const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     useEffect(() => {
         fetch("/api/staff")
@@ -25,38 +32,114 @@ export default function StaffPage() {
             });
     }, []);
 
+    const filteredStaff = staffList.filter((s) =>
+        s.name.toLowerCase().includes(search.toLowerCase()) ||
+        s.role.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const openEdit = (staff: Staff) => {
+        setSelectedStaff(staff);
+        setIsDialogOpen(true);
+    };
+
+    const handleEditSave = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedStaff) return;
+        const form = e.target as HTMLFormElement;
+        const formData = new FormData(form);
+        const updated = {
+            ...selectedStaff,
+            name: formData.get("name") as string,
+            role: formData.get("role") as Role,
+            pin: formData.get("pin") as string,
+        };
+        await fetch(`/api/staff/${selectedStaff.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updated),
+        });
+        setStaffList((list) => list.map((s) => (s.id === updated.id ? updated : s)));
+        setIsDialogOpen(false);
+    };
+
     return (
         <div className="container mx-auto p-8">
             <div className="flex items-center justify-between mb-8">
-                <h1 className="text-3xl font-bold">Staff Management</h1>
-                <Button>Add New Staff</Button>
+                <h1 className="text-3xl font-bold text-white">Staff Management</h1>
+                <Button onClick={() => setIsDialogOpen(true)}>Add New Staff</Button>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {loading ? (
-                    <p>Loading staff...</p>
-                ) : (
-                    staffList.map((staff) => (
-                        <Card key={staff.id}>
+            <Input
+                placeholder="Search staff by name or role"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="mb-4 w-80"
+            />
+
+            {loading ? (
+                <p className="text-muted-foreground">Loading staff...</p>
+            ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {filteredStaff.map((staff) => (
+                        <Card
+                            key={staff.id}
+                            className="glass border-0 bg-white/5 hover:bg-white/10 transition-all"
+                        >
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">
-                                    {staff.role}
+                                    <Badge variant="primary">{staff.role}</Badge>
                                 </CardTitle>
+                                <Button variant="ghost" size="sm" onClick={() => openEdit(staff)}>
+                                    Edit
+                                </Button>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{staff.name}</div>
+                                <div className="text-2xl font-bold text-white">{staff.name}</div>
                                 <p className="text-xs text-muted-foreground">
                                     PIN: {staff.pin ? "****" : "Not Set"}
                                 </p>
-                                <div className="mt-4 flex gap-2">
-                                    <Button variant="outline" size="sm">View Commissions</Button>
-                                    <Button variant="outline" size="sm">Edit</Button>
-                                </div>
                             </CardContent>
                         </Card>
-                    ))
-                )}
-            </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Add / Edit Modal */}
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                    {/* hidden trigger for programmatic open */}
+                    <span />
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle>{selectedStaff ? "Edit Staff" : "Add New Staff"}</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={selectedStaff ? handleEditSave : (e) => e.preventDefault()} className="space-y-4">
+                        <div className="grid gap-2">
+                            <label className="text-sm font-medium">Name</label>
+                            <Input name="name" defaultValue={selectedStaff?.name ?? ""} required />
+                        </div>
+                        <div className="grid gap-2">
+                            <label className="text-sm font-medium">Role</label>
+                            <select name="role" defaultValue={selectedStaff?.role ?? ""} className="h-10 rounded border bg-background px-3 py-2 text-sm" required>
+                                <option value="">Select role</option>
+                                <option value="ADMIN">ADMIN</option>
+                                <option value="STAFF">STAFF</option>
+                            </select>
+                        </div>
+                        <div className="grid gap-2">
+                            <label className="text-sm font-medium">PIN</label>
+                            <Input name="pin" defaultValue={selectedStaff?.pin ?? ""} />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button type="submit">{selectedStaff ? "Save" : "Create"}</Button>
+                        </div>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
