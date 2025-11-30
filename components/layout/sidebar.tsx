@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Scissors, Users, UserCircle, LogOut, Sparkles, Calendar } from "lucide-react";
+import { LayoutDashboard, Scissors, Users, UserCircle, LogOut, Sparkles, Calendar, Banknote } from "lucide-react";
 
 const navItems = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
     { href: "/pos", label: "POS Terminal", icon: Scissors },
+    { href: "/transactions", label: "Transactions", icon: Banknote },
     { href: "/appointments", label: "Appointments", icon: Calendar },
     { href: "/services", label: "Services", icon: Sparkles },
     { href: "/staff", label: "Staff", icon: Users },
