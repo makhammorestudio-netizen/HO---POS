@@ -50,6 +50,7 @@ interface StaffSummary {
 export function CommissionSummaryView() {
     const [data, setData] = useState<StaffSummary[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedPeriod, setSelectedPeriod] = useState<'today' | 'week' | 'month' | 'custom'>('today');
     const [dateRange, setDateRange] = useState({
         start: new Date().toISOString().split('T')[0],
         end: new Date().toISOString().split('T')[0]
@@ -79,15 +80,17 @@ export function CommissionSummaryView() {
         fetchCommissions();
     }, [dateRange]);
 
-    const setPresetDate = (preset: 'TODAY' | 'WEEK' | 'MONTH') => {
+    const setPresetDate = (preset: 'today' | 'week' | 'month') => {
         const end = new Date();
         const start = new Date();
 
-        if (preset === 'WEEK') {
+        setSelectedPeriod(preset);
+
+        if (preset === 'week') {
             const day = start.getDay();
             const diff = start.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday
             start.setDate(diff);
-        } else if (preset === 'MONTH') {
+        } else if (preset === 'month') {
             start.setDate(1);
         }
 
@@ -95,6 +98,12 @@ export function CommissionSummaryView() {
             start: start.toISOString().split('T')[0],
             end: end.toISOString().split('T')[0]
         });
+    };
+
+    // Handle custom date change
+    const handleDateChange = (type: 'start' | 'end', value: string) => {
+        setSelectedPeriod('custom');
+        setDateRange(prev => ({ ...prev, [type]: value }));
     };
 
     // Aggregations
@@ -142,7 +151,7 @@ export function CommissionSummaryView() {
     }, [data]);
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-500 pb-20">
             {/* Filters */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-friendly card-shadow">
                 <div className="flex items-center gap-2">
@@ -151,24 +160,24 @@ export function CommissionSummaryView() {
                         <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setPresetDate('TODAY')}
-                            className={cn("text-xs h-7", dateRange.start === new Date().toISOString().split('T')[0] && dateRange.end === dateRange.start && "bg-white shadow-sm font-bold")}
+                            onClick={() => setPresetDate('today')}
+                            className={cn("text-xs h-7", selectedPeriod === 'today' && "bg-white shadow-sm font-bold text-primary")}
                         >
                             Today
                         </Button>
                         <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setPresetDate('WEEK')}
-                            className={cn("text-xs h-7", dateRange.start !== dateRange.end && "bg-white shadow-sm font-bold")} // Simple active check
+                            onClick={() => setPresetDate('week')}
+                            className={cn("text-xs h-7", selectedPeriod === 'week' && "bg-white shadow-sm font-bold text-primary")}
                         >
                             Week
                         </Button>
                         <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setPresetDate('MONTH')}
-                            className="text-xs h-7"
+                            onClick={() => setPresetDate('month')}
+                            className={cn("text-xs h-7", selectedPeriod === 'month' && "bg-white shadow-sm font-bold text-primary")}
                         >
                             Month
                         </Button>
@@ -178,14 +187,14 @@ export function CommissionSummaryView() {
                     <Input
                         type="date"
                         value={dateRange.start}
-                        onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                        onChange={(e) => handleDateChange('start', e.target.value)}
                         className="w-36 h-9 bg-white border-slate-200"
                     />
                     <span className="text-muted-foreground">-</span>
                     <Input
                         type="date"
                         value={dateRange.end}
-                        onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                        onChange={(e) => handleDateChange('end', e.target.value)}
                         className="w-36 h-9 bg-white border-slate-200"
                     />
                 </div>

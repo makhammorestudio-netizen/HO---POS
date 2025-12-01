@@ -68,7 +68,7 @@ export default function StaffPage() {
     };
 
     return (
-        <div className="container mx-auto p-8">
+        <div className="w-full max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
                 <h1 className="text-3xl font-bold text-white">Staff Management</h1>
 
