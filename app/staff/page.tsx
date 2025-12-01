@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -66,7 +67,14 @@ export default function StaffPage() {
         <div className="container mx-auto p-8">
             <div className="flex items-center justify-between mb-8">
                 <h1 className="text-3xl font-bold text-white">Staff Management</h1>
-                <Button onClick={() => setIsDialogOpen(true)}>Add New Staff</Button>
+                <div className="flex gap-2">
+                    <Link href="/staff/commissions">
+                        <Button variant="secondary" className="bg-white/10 hover:bg-white/20 text-white border-0">
+                            View Commissions
+                        </Button>
+                    </Link>
+                    <Button onClick={() => setIsDialogOpen(true)}>Add New Staff</Button>
+                </div>
             </div>
 
             <Input
