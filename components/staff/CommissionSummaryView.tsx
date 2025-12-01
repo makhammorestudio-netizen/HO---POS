@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,9 +19,16 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Filter, Download, ChevronLeft } from 'lucide-react';
-import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer
+} from 'recharts';
 
 interface StaffSummary {
     id: string;
@@ -40,7 +47,7 @@ interface StaffSummary {
     }[];
 }
 
-export default function CommissionSummaryPage() {
+export function CommissionSummaryView() {
     const [data, setData] = useState<StaffSummary[]>([]);
     const [loading, setLoading] = useState(true);
     const [dateRange, setDateRange] = useState({
@@ -78,7 +85,7 @@ export default function CommissionSummaryPage() {
 
         if (preset === 'WEEK') {
             const day = start.getDay();
-            const diff = start.getDate() - day + (day === 0 ? -6 : 1);
+            const diff = start.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday
             start.setDate(diff);
         } else if (preset === 'MONTH') {
             start.setDate(1);
@@ -90,31 +97,62 @@ export default function CommissionSummaryPage() {
         });
     };
 
+    // Aggregations
     const totalCommissionPaid = data.reduce((sum, staff) => sum + staff.totalCommission, 0);
+    const totalRevenueGenerated = data.reduce((sum, staff) => sum + staff.totalRevenue, 0);
+    const totalServicesCount = data.reduce((sum, staff) => sum + staff.totalServices, 0);
+
+    // Chart Data Preparation
+    const weeklyChartData = useMemo(() => {
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const chartData = days.map(day => ({ name: day, commission: 0 }));
+
+        data.forEach(staff => {
+            staff.items.forEach(item => {
+                const date = new Date(item.date);
+                const dayIndex = date.getDay();
+                chartData[dayIndex].commission += item.commission;
+            });
+        });
+        return chartData;
+    }, [data]);
+
+    const monthlyChartData = useMemo(() => {
+        // Group by date (day of month)
+        const dailyMap: Record<string, number> = {};
+
+        data.forEach(staff => {
+            staff.items.forEach(item => {
+                const date = new Date(item.date).getDate(); // 1-31
+                if (!dailyMap[date]) dailyMap[date] = 0;
+                dailyMap[date] += item.commission;
+            });
+        });
+
+        // Create array for 1-31 (or max days in month, but simple 1-31 is fine for visual)
+        // Better: just map the keys that exist to avoid sparse chart if range is small
+        // But for "Monthly" view, 1-31 is expected.
+        // Let's just show the days that have data if range is custom, or 1-31 if month.
+        // For simplicity and robustness with custom ranges, let's sort the dates found.
+
+        return Object.keys(dailyMap).sort((a, b) => Number(a) - Number(b)).map(day => ({
+            name: day,
+            commission: dailyMap[day]
+        }));
+    }, [data]);
 
     return (
-        <div className="container mx-auto p-8 space-y-8">
-            {/* Header */}
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="flex items-center gap-4">
-                    <Link href="/staff">
-                        <Button variant="ghost" size="icon" className="rounded-full">
-                            <ChevronLeft className="h-5 w-5" />
-                        </Button>
-                    </Link>
-                    <div>
-                        <h1 className="text-3xl font-bold text-foreground">Commission Summary</h1>
-                        <p className="text-muted-foreground">Track staff performance and earnings</p>
-                    </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-slate-100 shadow-sm">
+        <div className="space-y-8 animate-in fade-in duration-500">
+            {/* Filters */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-friendly card-shadow">
+                <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Period:</span>
+                    <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => setPresetDate('TODAY')}
-                            className={cn("text-xs", dateRange.start === new Date().toISOString().split('T')[0] && "bg-slate-100 font-bold")}
+                            className={cn("text-xs h-7", dateRange.start === new Date().toISOString().split('T')[0] && dateRange.end === dateRange.start && "bg-white shadow-sm font-bold")}
                         >
                             Today
                         </Button>
@@ -122,52 +160,110 @@ export default function CommissionSummaryPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => setPresetDate('WEEK')}
-                            className="text-xs"
+                            className={cn("text-xs h-7", dateRange.start !== dateRange.end && "bg-white shadow-sm font-bold")} // Simple active check
                         >
-                            This Week
+                            Week
                         </Button>
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => setPresetDate('MONTH')}
-                            className="text-xs"
+                            className="text-xs h-7"
                         >
-                            This Month
+                            Month
                         </Button>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Input
-                            type="date"
-                            value={dateRange.start}
-                            onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                            className="w-36 h-9 bg-white"
-                        />
-                        <span className="text-muted-foreground">-</span>
-                        <Input
-                            type="date"
-                            value={dateRange.end}
-                            onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                            className="w-36 h-9 bg-white"
-                        />
-                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Input
+                        type="date"
+                        value={dateRange.start}
+                        onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                        className="w-36 h-9 bg-white border-slate-200"
+                    />
+                    <span className="text-muted-foreground">-</span>
+                    <Input
+                        type="date"
+                        value={dateRange.end}
+                        onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                        className="w-36 h-9 bg-white border-slate-200"
+                    />
                 </div>
             </div>
 
-            {/* Total Card */}
-            <Card className="bg-white border-0 rounded-friendly card-shadow w-full md:w-1/3">
-                <CardContent className="p-6">
-                    <div className="space-y-1">
-                        <p className="text-sm font-medium text-muted-foreground">Total Commission Payout</p>
+            {/* Summary Cards */}
+            <div className="grid gap-6 md:grid-cols-3">
+                <Card className="bg-white border-0 rounded-friendly card-shadow">
+                    <CardContent className="p-6 text-center">
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Total Commission</p>
                         <p className="text-3xl font-bold text-primary">฿{totalCommissionPaid.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">For selected period</p>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+                <Card className="bg-white border-0 rounded-friendly card-shadow">
+                    <CardContent className="p-6 text-center">
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Total Revenue</p>
+                        <p className="text-3xl font-bold text-slate-700">฿{totalRevenueGenerated.toLocaleString()}</p>
+                    </CardContent>
+                </Card>
+                <Card className="bg-white border-0 rounded-friendly card-shadow">
+                    <CardContent className="p-6 text-center">
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Services Performed</p>
+                        <p className="text-3xl font-bold text-slate-700">{totalServicesCount}</p>
+                    </CardContent>
+                </Card>
+            </div>
 
-            {/* Main Table */}
+            {/* Charts Section */}
+            <div className="grid gap-6 md:grid-cols-2">
+                <Card className="bg-white border-0 rounded-friendly card-shadow">
+                    <CardHeader>
+                        <CardTitle className="text-lg">Weekly Commission</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="h-[200px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={weeklyChartData}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(value) => `฿${value}`} />
+                                    <Tooltip
+                                        cursor={{ fill: '#f8fafc' }}
+                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    />
+                                    <Bar dataKey="commission" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-white border-0 rounded-friendly card-shadow">
+                    <CardHeader>
+                        <CardTitle className="text-lg">Daily Breakdown</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="h-[200px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={monthlyChartData}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(value) => `฿${value}`} />
+                                    <Tooltip
+                                        cursor={{ fill: '#f8fafc' }}
+                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    />
+                                    <Bar dataKey="commission" fill="#f472b6" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Monthly Report Table */}
             <Card className="bg-white border-0 rounded-friendly card-shadow">
                 <CardHeader>
-                    <CardTitle>Staff Performance</CardTitle>
+                    <CardTitle>Commission Report</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Table>
@@ -175,9 +271,9 @@ export default function CommissionSummaryPage() {
                             <TableRow>
                                 <TableHead>Staff Name</TableHead>
                                 <TableHead>Role</TableHead>
-                                <TableHead className="text-center">Services Done</TableHead>
-                                <TableHead className="text-right">Total Revenue</TableHead>
-                                <TableHead className="text-right">Commission Earned</TableHead>
+                                <TableHead className="text-center">Services</TableHead>
+                                <TableHead className="text-right">Revenue</TableHead>
+                                <TableHead className="text-right">Commission</TableHead>
                                 <TableHead></TableHead>
                             </TableRow>
                         </TableHeader>
@@ -213,7 +309,7 @@ export default function CommissionSummaryPage() {
                                             ฿{staff.totalCommission.toLocaleString()}
                                         </TableCell>
                                         <TableCell className="text-right text-xs text-muted-foreground">
-                                            View Details &rarr;
+                                            Details &rarr;
                                         </TableCell>
                                     </TableRow>
                                 ))
