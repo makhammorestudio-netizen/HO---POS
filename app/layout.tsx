@@ -19,7 +19,7 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className={cn(
-                "min-h-screen bg-background font-sans antialiased flex overflow-hidden",
+                "h-screen bg-background font-sans antialiased flex overflow-hidden",
                 inter.variable
             )}>
                 <Sidebar />
