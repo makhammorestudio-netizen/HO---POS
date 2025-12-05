@@ -29,59 +29,86 @@ export async function GET(request: Request) {
 
         // Fetch all staff
         const staffMembers = await prisma.user.findMany({
-            orderBy: { name: 'asc' },
+            orderBy: { name: 'asc' }
+        });
+
+        // Fetch all transaction items in the date range
+        const allItems = await prisma.transactionItem.findMany({
+            where: {
+                transaction: dateFilter
+            },
             include: {
-                primaryTransactions: {
-                    where: {
-                        transaction: dateFilter
-                    },
-                    include: {
-                        service: true,
-                        transaction: true
-                    }
-                }
+                service: true,
+                transaction: true,
+                primaryStaff: true,
+                assistantStaff: true
             }
         });
 
         // Calculate aggregates for each staff
         const summary = staffMembers.map(staff => {
-            const items = staff.primaryTransactions;
+            let mainServices = 0;
+            let assistServices = 0;
+            let totalRevenue = 0;
+            let totalCommission = 0;
+            const items: any[] = [];
 
-            const totalServices = items.length;
-            const totalRevenue = items.reduce((sum, item) => sum + Number(item.price), 0);
-            const totalCommission = items.reduce((sum, item) => sum + Number(item.commissionAmount), 0);
+            allItems.forEach(item => {
+                const isOwner = item.primaryStaffId === staff.id;
+                const isAssistant = item.assistantStaffId === staff.id;
 
-            // Group by category (optional breakdown)
-            const byCategory: Record<string, { count: number, revenue: number, commission: number }> = {};
+                if (isOwner && Number(item.price) > 0) { // Only count as main service if price > 0
+                    // This staff is the main owner of this service
+                    mainServices++;
+                    totalRevenue += Number(item.price);
+                    totalCommission += Number(item.commissionAmount);
 
-            items.forEach(item => {
-                const cat = item.service.category;
-                if (!byCategory[cat]) {
-                    byCategory[cat] = { count: 0, revenue: 0, commission: 0 };
+                    items.push({
+                        id: item.id,
+                        serviceName: item.service.name,
+                        category: item.service.category,
+                        price: Number(item.price),
+                        commission: Number(item.commissionAmount),
+                        date: item.transaction.createdAt,
+                        type: 'main'
+                    });
+                } else if (isAssistant) {
+                    // This staff is assisting on this service
+                    // Note: We need to find the corresponding commission item for this assistant
+                    // Since we split items, we need to find items where this staff is primaryStaff
+                    // but the price is 0 (assistant items)
                 }
-                byCategory[cat].count++;
-                byCategory[cat].revenue += Number(item.price);
-                byCategory[cat].commission += Number(item.commissionAmount);
+            });
+
+            // Also check for items where this staff is listed as primaryStaff with price=0
+            // These are assistant commission records
+            allItems.forEach(item => {
+                if (item.primaryStaffId === staff.id && Number(item.price) === 0) {
+                    // This is an assistant commission record
+                    assistServices++;
+                    totalCommission += Number(item.commissionAmount);
+
+                    items.push({
+                        id: item.id,
+                        serviceName: item.service.name,
+                        category: item.service.category,
+                        price: 0,
+                        commission: Number(item.commissionAmount),
+                        date: item.transaction.createdAt,
+                        type: 'assist'
+                    });
+                }
             });
 
             return {
                 id: staff.id,
                 name: staff.name,
                 role: staff.role,
-                totalServices,
+                mainServices,
+                assistServices,
                 totalRevenue,
                 totalCommission,
-                byCategory,
-                // Include raw items for detail view if needed, but maybe too heavy? 
-                // Let's include a simplified version for the modal
-                items: items.map(item => ({
-                    id: item.id,
-                    serviceName: item.service.name,
-                    category: item.service.category,
-                    price: Number(item.price),
-                    commission: Number(item.commissionAmount),
-                    date: item.transaction.createdAt
-                }))
+                items
             };
         });
 

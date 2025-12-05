@@ -34,7 +34,8 @@ interface StaffSummary {
     id: string;
     name: string;
     role: string;
-    totalServices: number;
+    mainServices: number;
+    assistServices: number;
     totalRevenue: number;
     totalCommission: number;
     items: {
@@ -44,6 +45,7 @@ interface StaffSummary {
         price: number;
         commission: number;
         date: string;
+        type?: 'main' | 'assist';
     }[];
 }
 
@@ -109,7 +111,7 @@ export function CommissionSummaryView() {
     // Aggregations
     const totalCommissionPaid = data.reduce((sum, staff) => sum + staff.totalCommission, 0);
     const totalRevenueGenerated = data.reduce((sum, staff) => sum + staff.totalRevenue, 0);
-    const totalServicesCount = data.reduce((sum, staff) => sum + staff.totalServices, 0);
+    const totalServicesCount = data.reduce((sum, staff) => sum + staff.mainServices + staff.assistServices, 0);
 
     // Chart Data Preparation
     const weeklyChartData = useMemo(() => {
@@ -273,6 +275,9 @@ export function CommissionSummaryView() {
             <Card className="bg-white border-0 rounded-friendly card-shadow">
                 <CardHeader>
                     <CardTitle>Commission Report</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                        Revenue = value of services where this staff is main stylist or works solo. Assist work is shown under Assist Services and Commission.
+                    </p>
                 </CardHeader>
                 <CardContent>
                     <Table>
@@ -280,7 +285,8 @@ export function CommissionSummaryView() {
                             <TableRow>
                                 <TableHead>Staff Name</TableHead>
                                 <TableHead>Role</TableHead>
-                                <TableHead className="text-center">Services</TableHead>
+                                <TableHead className="text-center">Main Services</TableHead>
+                                <TableHead className="text-center">Assist Services</TableHead>
                                 <TableHead className="text-right">Revenue</TableHead>
                                 <TableHead className="text-right">Commission</TableHead>
                                 <TableHead></TableHead>
@@ -312,13 +318,14 @@ export function CommissionSummaryView() {
                                                 {staff.role}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-center">{staff.totalServices}</TableCell>
+                                        <TableCell className="text-center">{staff.mainServices}</TableCell>
+                                        <TableCell className="text-center">{staff.assistServices}</TableCell>
                                         <TableCell className="text-right">฿{staff.totalRevenue.toLocaleString()}</TableCell>
                                         <TableCell className="text-right font-bold text-green-600">
                                             ฿{staff.totalCommission.toLocaleString()}
                                         </TableCell>
                                         <TableCell className="text-right text-xs text-muted-foreground">
-                                            Details &rarr;
+                                            View Details
                                         </TableCell>
                                     </TableRow>
                                 ))
