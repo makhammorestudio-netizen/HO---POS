@@ -212,19 +212,19 @@ export default function POSPage() {
                         <button
                             key={service.id}
                             onClick={() => addToCart(service)}
-                            className="group relative flex flex-col items-start justify-between rounded-xl border border-white/10 bg-white/5 p-4 transition-all hover:border-primary/50 hover:bg-primary/5 hover:shadow-lg hover:shadow-primary/10"
+                            className="group relative flex flex-col items-start justify-between rounded-2xl bg-white p-4 transition-all hover:shadow-lg hover:shadow-primary/20 card-shadow"
                         >
-                            <div className="mb-4 rounded-lg bg-white/10 p-3 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                            <div className="mb-4 rounded-lg bg-primary/10 p-3 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                                 {service.category === 'HAIR' && <Scissors className="h-6 w-6" />}
                                 {service.category === 'NAIL' && <Sparkles className="h-6 w-6" />}
                                 {service.category === 'LASH' && <Eye className="h-6 w-6" />}
                                 {service.category === 'PRODUCT' && <Package className="h-6 w-6" />}
                             </div>
                             <div className="text-left">
-                                <h3 className="font-semibold leading-tight group-hover:text-primary transition-colors">{service.name}</h3>
+                                <h3 className="font-semibold leading-tight text-foreground group-hover:text-primary transition-colors">{service.name}</h3>
                                 <p className="mt-1 text-sm text-muted-foreground">{service.durationMin} min</p>
                             </div>
-                            <div className="mt-4 text-lg font-bold">
+                            <div className="mt-4 text-lg font-bold text-foreground">
                                 ฿{Number(service.price).toFixed(2)}
                             </div>
                         </button>
@@ -233,9 +233,9 @@ export default function POSPage() {
             </div>
 
             {/* RIGHT SIDE: Cart */}
-            <div className="flex w-96 flex-col rounded-2xl border border-white/10 bg-black/20 backdrop-blur-xl">
-                <div className="border-b border-white/10 p-6">
-                    <h2 className="flex items-center gap-2 text-xl font-bold">
+            <div className="flex w-96 flex-col rounded-2xl bg-white card-shadow">
+                <div className="border-b border-slate-200 p-6">
+                    <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
                         <ShoppingCart className="h-5 w-5 text-primary" />
                         Current Order
                     </h2>
@@ -244,12 +244,12 @@ export default function POSPage() {
 
                 {/* Notifications */}
                 {error && (
-                    <div className="mx-6 mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-500 border border-red-500/20">
+                    <div className="mx-6 mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-600 border border-red-500/20">
                         {error}
                     </div>
                 )}
                 {success && (
-                    <div className="mx-6 mt-4 rounded-lg bg-green-500/10 p-3 text-sm text-green-500 border border-green-500/20">
+                    <div className="mx-6 mt-4 rounded-lg bg-green-500/10 p-3 text-sm text-green-600 border border-green-500/20">
                         {success}
                     </div>
                 )}
@@ -263,14 +263,14 @@ export default function POSPage() {
                         </div>
                     ) : (
                         cart.map((item, index) => (
-                            <div key={index} className="rounded-lg border border-white/10 bg-white/5 p-3">
+                            <div key={index} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                                 <div className="flex justify-between items-start mb-2">
-                                    <span className="font-medium">{item.service.name}</span>
+                                    <span className="font-medium text-foreground">{item.service.name}</span>
                                     <div className="flex items-center gap-1">
                                         <span className="text-xs text-muted-foreground">฿</span>
                                         <Input
                                             type="number"
-                                            className="h-7 w-20 px-1 py-0 text-right font-bold bg-black/20 border-white/10"
+                                            className="h-7 w-20 px-1 py-0 text-right font-bold bg-white border-slate-200"
                                             value={item.price}
                                             onChange={(e) => updateItemPrice(index, e.target.value)}
                                         />
@@ -280,18 +280,18 @@ export default function POSPage() {
                                 {/* Staff Selection */}
                                 <div className="space-y-2 text-sm">
                                     <select
-                                        className="w-full rounded bg-black/20 px-2 py-1 text-xs border border-white/10"
+                                        className="w-full rounded bg-white px-2 py-1 text-xs border border-slate-200 text-foreground"
                                         value={item.primaryStaffId}
                                         onChange={(e) => updateItemStaff(index, 'primaryStaffId', e.target.value)}
                                     >
-                                        <option value="">Select Stylist</option>
+                                        <option value="">No Stylist</option>
                                         {staff.filter(s => s.role === 'STYLIST').map(s => (
                                             <option key={s.id} value={s.id}>{s.name}</option>
                                         ))}
                                     </select>
 
                                     <select
-                                        className="w-full rounded bg-black/20 px-2 py-1 text-xs border border-white/10"
+                                        className="w-full rounded bg-white px-2 py-1 text-xs border border-slate-200 text-foreground"
                                         value={item.assistantStaffId || ''}
                                         onChange={(e) => updateItemStaff(index, 'assistantStaffId', e.target.value)}
                                     >
@@ -304,7 +304,7 @@ export default function POSPage() {
 
                                 <button
                                     onClick={() => removeFromCart(index)}
-                                    className="mt-2 flex w-full items-center justify-center gap-1 text-xs text-red-400 hover:text-red-300"
+                                    className="mt-2 flex w-full items-center justify-center gap-1 text-xs text-red-500 hover:text-red-600"
                                 >
                                     <Trash2 className="h-3 w-3" /> Remove
                                 </button>
@@ -314,13 +314,13 @@ export default function POSPage() {
                 </div>
 
                 {/* Footer / Checkout */}
-                <div className="border-t border-white/10 bg-black/40 p-6 space-y-4">
+                <div className="border-t border-slate-200 bg-slate-50 p-6 space-y-4">
                     {/* Note */}
                     <Input
                         placeholder="Add note / coupon..."
                         value={note}
                         onChange={(e) => setNote(e.target.value)}
-                        className="bg-white/5 border-white/10"
+                        className="bg-white border-slate-200"
                     />
 
                     {/* Payment Method */}
@@ -337,8 +337,8 @@ export default function POSPage() {
                                 className={cn(
                                     "flex flex-col items-center justify-center rounded-lg p-2 text-[10px] transition-all gap-1",
                                     paymentMethod === method.id
-                                        ? "bg-primary text-white"
-                                        : "bg-white/5 text-muted-foreground hover:bg-white/10"
+                                        ? "bg-primary text-white shadow-md"
+                                        : "bg-white text-muted-foreground hover:bg-slate-100 border border-slate-200"
                                 )}
                             >
                                 <method.icon className="h-4 w-4" />
@@ -347,7 +347,7 @@ export default function POSPage() {
                         ))}
                     </div>
 
-                    <div className="flex items-center justify-between text-lg font-bold">
+                    <div className="flex items-center justify-between text-lg font-bold text-foreground">
                         <span>Total</span>
                         <span>฿{totalAmount.toFixed(2)}</span>
                     </div>

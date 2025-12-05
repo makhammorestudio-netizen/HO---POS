@@ -107,8 +107,8 @@ model TransactionItem {
   service       Service     @relation(fields: [serviceId], references: [id])
 
   // Commission tracking
-  primaryStaffId String
-  primaryStaff   User    @relation("PrimaryStaff", fields: [primaryStaffId], references: [id])
+  primaryStaffId String?
+  primaryStaff   User?    @relation("PrimaryStaff", fields: [primaryStaffId], references: [id])
 
   assistantStaffId String?
   assistantStaff   User?   @relation("AssistantStaff", fields: [assistantStaffId], references: [id])

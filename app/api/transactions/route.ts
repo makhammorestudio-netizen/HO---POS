@@ -30,34 +30,50 @@ export async function POST(request: Request) {
                 customerId,
                 note,
                 items: {
-                    create: items.map((item: any) => {
-                        const primaryStaff = staffMap.get(item.primaryStaffId);
-                        let commissionAmount = 0;
+                    items: {
+                        create: items.flatMap((item: any) => {
+                            const createdItems = [];
+                            const price = Number(item.price);
+                            const hasStylist = !!item.primaryStaffId;
+                            const hasAssistant = !!item.assistantStaffId;
 
-                        // Calculate commission for primary staff
-                        if (primaryStaff) {
-                            if (primaryStaff.commissionType === CommissionType.PERCENT) {
-                                commissionAmount = Number(item.price) * (Number(primaryStaff.commissionRate) / 100);
-                            } else {
-                                commissionAmount = Number(primaryStaff.commissionRate);
+                            // 1. Stylist Item (or Main Item if no staff)
+                            if (hasStylist || !hasAssistant) {
+                                let commission = 0;
+                                if (hasStylist) {
+                                    commission = price * 0.10; // 10% for Stylist
+                                }
+
+                                createdItems.push({
+                                    serviceId: item.serviceId,
+                                    price: price, // Full price attributed here
+                                    primaryStaffId: item.primaryStaffId || null, // Can be null now
+                                    assistantStaffId: null, // We don't use this relation for commission tracking anymore
+                                    commissionAmount: commission
+                                });
                             }
-                        }
 
-                        // Note: Currently only storing primary staff commission on the item. 
-                        // If assistant commission is needed, we might need to split it or add another field.
-                        // For now, following the prompt "Each TransactionItem must have... commissionAmount".
-                        // Assuming this refers to the total commission or primary. 
-                        // Given the prompt says "commissionAmount is calculated from the staff commission settings", 
-                        // and a transaction item has one primary staff, we'll use that.
+                            // 2. Assistant Item (if present)
+                            if (hasAssistant) {
+                                let commission = 0;
+                                if (hasStylist) {
+                                    commission = price * 0.05; // 5% if helping stylist
+                                } else {
+                                    commission = price * 0.10; // 10% if solo (no stylist)
+                                }
 
-                        return {
-                            serviceId: item.serviceId,
-                            price: item.price,
-                            primaryStaffId: item.primaryStaffId,
-                            assistantStaffId: item.assistantStaffId || null,
-                            commissionAmount: commissionAmount
-                        };
-                    }),
+                                createdItems.push({
+                                    serviceId: item.serviceId,
+                                    price: 0, // 0 revenue attributed to assistant to avoid double counting
+                                    primaryStaffId: item.assistantStaffId, // Assistant becomes "primary" for this record
+                                    assistantStaffId: null,
+                                    commissionAmount: commission
+                                });
+                            }
+
+                            return createdItems;
+                        }),
+                    },
                 },
             },
             include: {
