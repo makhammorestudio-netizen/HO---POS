@@ -75,7 +75,11 @@ export default function POSPage() {
                 const staffRes = await fetch('/api/staff');
                 if (staffRes.ok) {
                     const data = await staffRes.json();
-                    if (Array.isArray(data)) setStaff(data);
+                    if (Array.isArray(data)) {
+                        console.log('📋 Full staff list:', data);
+                        console.log('👥 Staff roles:', data.map((s: any) => ({ name: s.name, role: s.role })));
+                        setStaff(data);
+                    }
                 }
             } catch (error) {
                 console.error("Failed to fetch data", error);
@@ -287,12 +291,16 @@ export default function POSPage() {
                                         onChange={(e) => updateItemStaff(index, 'mainStaffId', e.target.value)}
                                     >
                                         <option value="">Select Main Staff</option>
-                                        {staff.filter(s => s.role === 'STYLIST' || s.role === 'TECHNICIAN').map(s => {
-                                            const roleDisplay = s.role === 'STYLIST' ? 'Stylist' : 'Technician';
-                                            return (
-                                                <option key={s.id} value={s.id}>{s.name} ({roleDisplay})</option>
-                                            );
-                                        })}
+                                        {(() => {
+                                            const mainStaffOptions = staff.filter(s => s.role === 'STYLIST' || s.role === 'TECHNICIAN');
+                                            console.log('🎯 Main staff options:', mainStaffOptions.map(s => ({ name: s.name, role: s.role })));
+                                            return mainStaffOptions.map(s => {
+                                                const roleDisplay = s.role === 'STYLIST' ? 'Stylist' : 'Technician';
+                                                return (
+                                                    <option key={s.id} value={s.id}>{s.name} ({roleDisplay})</option>
+                                                );
+                                            });
+                                        })()}
                                     </select>
 
                                     {/* Assistant - ASSISTANT only, HAIR services only */}
