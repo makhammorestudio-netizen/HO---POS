@@ -155,7 +155,9 @@ export default function StaffPage() {
                                     <select name="role" defaultValue={selectedStaff?.role ?? ""} className="h-10 rounded border bg-background px-3 py-2 text-sm" required>
                                         <option value="">Select role</option>
                                         <option value="ADMIN">ADMIN</option>
-                                        <option value="STAFF">STAFF</option>
+                                        <option value="STYLIST">STYLIST</option>
+                                        <option value="TECHNICIAN">TECHNICIAN</option>
+                                        <option value="ASSISTANT">ASSISTANT</option>
                                     </select>
                                 </div>
                                 <div className="grid gap-2">
