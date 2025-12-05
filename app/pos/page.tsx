@@ -287,9 +287,12 @@ export default function POSPage() {
                                         onChange={(e) => updateItemStaff(index, 'mainStaffId', e.target.value)}
                                     >
                                         <option value="">Select Main Staff</option>
-                                        {staff.filter(s => s.role === 'STYLIST' || s.role === 'TECHNICIAN').map(s => (
-                                            <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
-                                        ))}
+                                        {staff.filter(s => s.role === 'STYLIST' || s.role === 'TECHNICIAN').map(s => {
+                                            const roleDisplay = s.role === 'STYLIST' ? 'Stylist' : 'Technician';
+                                            return (
+                                                <option key={s.id} value={s.id}>{s.name} ({roleDisplay})</option>
+                                            );
+                                        })}
                                     </select>
 
                                     {/* Assistant - ASSISTANT only, HAIR services only */}
