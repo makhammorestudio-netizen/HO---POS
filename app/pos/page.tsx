@@ -32,14 +32,14 @@ interface Service {
 interface Staff {
     id: string;
     name: string;
-    role: 'STYLIST' | 'ASSISTANT';
+    role: 'STYLIST' | 'TECHNICIAN' | 'ASSISTANT';
 }
 
 interface CartItem {
     service: Service;
-    primaryStaffId: string;
-    assistantStaffId?: string;
-    price: number; // Editable price
+    mainStaffId: string;      // required: STYLIST or TECHNICIAN
+    assistantId?: string;     // optional: ASSISTANT only, HAIR services only
+    price: number;            // Editable price
 }
 
 const CATEGORIES = [
@@ -86,11 +86,11 @@ export default function POSPage() {
     }, []);
 
     const addToCart = (service: Service) => {
-        // Default to first stylist found
-        const defaultStylist = staff.find(s => s.role === 'STYLIST')?.id || '';
+        // Default to first stylist or technician
+        const defaultMain = staff.find(s => s.role === 'STYLIST' || s.role === 'TECHNICIAN')?.id || '';
         setCart([...cart, {
             service,
-            primaryStaffId: defaultStylist,
+            mainStaffId: defaultMain,
             price: Number(service.price) // Initialize with service base price
         }]);
         setSuccess(null);
@@ -102,7 +102,7 @@ export default function POSPage() {
         setCart(newCart);
     };
 
-    const updateItemStaff = (index: number, field: 'primaryStaffId' | 'assistantStaffId', value: string) => {
+    const updateItemStaff = (index: number, field: 'mainStaffId' | 'assistantId', value: string) => {
         const newCart = [...cart];
         newCart[index] = { ...newCart[index], [field]: value };
         setCart(newCart);
@@ -133,8 +133,9 @@ export default function POSPage() {
                     items: cart.map(item => ({
                         serviceId: item.service.id,
                         price: item.price,
-                        primaryStaffId: item.primaryStaffId,
-                        assistantStaffId: item.assistantStaffId
+                        mainStaffId: item.mainStaffId,
+                        assistantId: item.assistantId,
+                        category: item.service.category
                     })),
                     paymentMethod,
                     note
@@ -279,27 +280,31 @@ export default function POSPage() {
 
                                 {/* Staff Selection */}
                                 <div className="space-y-2 text-sm">
+                                    {/* Main Staff - STYLIST or TECHNICIAN only */}
                                     <select
                                         className="w-full rounded bg-white px-2 py-1 text-xs border border-slate-200 text-foreground"
-                                        value={item.primaryStaffId}
-                                        onChange={(e) => updateItemStaff(index, 'primaryStaffId', e.target.value)}
+                                        value={item.mainStaffId}
+                                        onChange={(e) => updateItemStaff(index, 'mainStaffId', e.target.value)}
                                     >
-                                        <option value="">No Stylist</option>
-                                        {staff.filter(s => s.role === 'STYLIST').map(s => (
-                                            <option key={s.id} value={s.id}>{s.name}</option>
-                                        ))}
-                                    </select>
-
-                                    <select
-                                        className="w-full rounded bg-white px-2 py-1 text-xs border border-slate-200 text-foreground"
-                                        value={item.assistantStaffId || ''}
-                                        onChange={(e) => updateItemStaff(index, 'assistantStaffId', e.target.value)}
-                                    >
-                                        <option value="">No Assistant</option>
-                                        {staff.map(s => (
+                                        <option value="">Select Main Staff</option>
+                                        {staff.filter(s => s.role === 'STYLIST' || s.role === 'TECHNICIAN').map(s => (
                                             <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
                                         ))}
                                     </select>
+
+                                    {/* Assistant - ASSISTANT only, HAIR services only */}
+                                    {item.service.category === 'HAIR' && (
+                                        <select
+                                            className="w-full rounded bg-white px-2 py-1 text-xs border border-slate-200 text-foreground"
+                                            value={item.assistantId || ''}
+                                            onChange={(e) => updateItemStaff(index, 'assistantId', e.target.value)}
+                                        >
+                                            <option value="">No Assistant</option>
+                                            {staff.filter(s => s.role === 'ASSISTANT').map(s => (
+                                                <option key={s.id} value={s.id}>{s.name}</option>
+                                            ))}
+                                        </select>
+                                    )}
                                 </div>
 
                                 <button
