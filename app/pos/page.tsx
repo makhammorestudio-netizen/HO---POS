@@ -27,6 +27,7 @@ interface Service {
     name: string;
     category: 'HAIR' | 'NAIL' | 'LASH' | 'PRODUCT';
     price: number;
+    cogs?: number;
     durationMin: number;
 }
 
@@ -42,6 +43,7 @@ interface CartItem {
     mainStaffId: string;      // required: STYLIST or TECHNICIAN
     assistantId?: string;     // optional: ASSISTANT only, HAIR services only
     price: number;            // Editable price
+    cogs: number;             // Cost basis
 }
 
 const CATEGORIES = [
@@ -97,7 +99,8 @@ export default function POSPage() {
         setCart([...cart, {
             service,
             mainStaffId: defaultMain,
-            price: Number(service.price) // Initialize with service base price
+            price: Number(service.price),
+            cogs: Number(service.cogs || 0)
         }]);
         setSuccess(null);
     };
@@ -139,6 +142,7 @@ export default function POSPage() {
                     items: cart.map(item => ({
                         serviceId: item.service.id,
                         price: item.price,
+                        cogs: item.cogs,
                         mainStaffId: item.mainStaffId,
                         assistantId: item.assistantId,
                         category: item.service.category

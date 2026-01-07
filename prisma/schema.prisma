@@ -76,6 +76,7 @@ model Service {
   name        String
   category    ServiceCategory
   price       Decimal
+  cogs        Decimal         @default(0) // Cost of Goods Sold
   durationMin Int             @default(30)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
@@ -100,6 +101,7 @@ model Transaction {
 model TransactionItem {
   id            String   @id @default(cuid())
   price         Decimal  // Price at time of sale
+  cost          Decimal  @default(0) // Cost snapshot at time of sale
   commissionAmount Decimal @default(0)
   
   transactionId String

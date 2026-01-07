@@ -24,6 +24,7 @@ export async function POST(request: Request) {
                 name,
                 category,
                 price: Number(price),
+                cogs: Number(body.cogs || 0),
                 durationMin: Number(durationMin),
             },
         });

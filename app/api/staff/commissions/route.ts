@@ -45,46 +45,60 @@ export async function GET(request: Request) {
             }
         });
 
+
         // Calculate aggregates for each staff
-        const summary = staffMembers.map(staff => {
+        const summary = staffMembers.map((staff: any) => {
             let mainServices = 0;
             let assistServices = 0;
             let totalRevenue = 0;
+            let totalCost = 0;
+            let totalProfit = 0;
             let totalCommission = 0;
-            const items: any[] = [];
 
-            allItems.forEach(item => {
+            interface SummaryItem {
+                id: string;
+                serviceName: string;
+                category: string;
+                price: number;
+                cost: number;
+                profit: number;
+                commission: number;
+                date: Date;
+                type: 'main' | 'assist';
+            }
+
+            const items: SummaryItem[] = [];
+
+            allItems.forEach((item: any) => {
                 const isOwner = item.primaryStaffId === staff.id;
-                const isAssistant = item.assistantStaffId === staff.id;
+                // Check if this is an assistant "commission-only" record (price 0)
+                const isAssistRecord = isOwner && Number(item.price) === 0;
 
-                if (isOwner && Number(item.price) > 0) { // Only count as main service if price > 0
-                    // This staff is the main owner of this service
+                if (isOwner && Number(item.price) > 0) {
+                    // Main Service (Revenue generating)
                     mainServices++;
-                    totalRevenue += Number(item.price);
+                    const price = Number(item.price);
+                    const cost = Number(item.cost || 0); // Need to ensure schema has cost
+                    const profit = Math.max(0, price - cost);
+
+                    totalRevenue += price;
+                    totalCost += cost;
+                    totalProfit += profit;
                     totalCommission += Number(item.commissionAmount);
 
                     items.push({
                         id: item.id,
                         serviceName: item.service.name,
                         category: item.service.category,
-                        price: Number(item.price),
+                        price: price,
+                        cost: cost,
+                        profit: profit,
                         commission: Number(item.commissionAmount),
                         date: item.transaction.createdAt,
                         type: 'main'
                     });
-                } else if (isAssistant) {
-                    // This staff is assisting on this service
-                    // Note: We need to find the corresponding commission item for this assistant
-                    // Since we split items, we need to find items where this staff is primaryStaff
-                    // but the price is 0 (assistant items)
-                }
-            });
-
-            // Also check for items where this staff is listed as primaryStaff with price=0
-            // These are assistant commission records
-            allItems.forEach(item => {
-                if (item.primaryStaffId === staff.id && Number(item.price) === 0) {
-                    // This is an assistant commission record
+                } else if (isAssistRecord) {
+                    // Assistant Commission Record
                     assistServices++;
                     totalCommission += Number(item.commissionAmount);
 
@@ -93,6 +107,8 @@ export async function GET(request: Request) {
                         serviceName: item.service.name,
                         category: item.service.category,
                         price: 0,
+                        cost: 0,
+                        profit: 0,
                         commission: Number(item.commissionAmount),
                         date: item.transaction.createdAt,
                         type: 'assist'
@@ -108,6 +124,8 @@ export async function GET(request: Request) {
                 mainServices,
                 assistServices,
                 totalRevenue,
+                totalCost,
+                totalProfit,
                 totalCommission,
                 items
             };

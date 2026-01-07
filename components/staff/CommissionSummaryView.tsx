@@ -31,6 +31,7 @@ import {
 } from 'recharts';
 import { StaffAvatar } from './StaffAvatar';
 
+
 interface StaffSummary {
     id: string;
     name: string;
@@ -39,12 +40,16 @@ interface StaffSummary {
     mainServices: number;
     assistServices: number;
     totalRevenue: number;
+    totalCost: number;
+    totalProfit: number;
     totalCommission: number;
     items: {
         id: string;
         serviceName: string;
         category: string;
         price: number;
+        cost: number;
+        profit: number;
         commission: number;
         date: string;
         type?: 'main' | 'assist';
@@ -111,9 +116,9 @@ export function CommissionSummaryView() {
     };
 
     // Aggregations
-    const totalCommissionPaid = data.reduce((sum, staff) => sum + staff.totalCommission, 0);
-    const totalRevenueGenerated = data.reduce((sum, staff) => sum + staff.totalRevenue, 0);
-    const totalServicesCount = data.reduce((sum, staff) => sum + staff.mainServices + staff.assistServices, 0);
+    const totalCommissionPaid = data.reduce((sum: number, staff: StaffSummary) => sum + staff.totalCommission, 0);
+    const totalRevenueGenerated = data.reduce((sum: number, staff: StaffSummary) => sum + staff.totalRevenue, 0);
+    const totalServicesCount = data.reduce((sum: number, staff: StaffSummary) => sum + staff.mainServices + staff.assistServices, 0);
 
     // Chart Data Preparation
     const weeklyChartData = useMemo(() => {
@@ -290,6 +295,8 @@ export function CommissionSummaryView() {
                                 <TableHead className="text-center">Main Services</TableHead>
                                 <TableHead className="text-center">Assist Services</TableHead>
                                 <TableHead className="text-right">Revenue</TableHead>
+                                <TableHead className="text-right">Cost</TableHead>
+                                <TableHead className="text-right">Profit</TableHead>
                                 <TableHead className="text-right">Commission</TableHead>
                                 <TableHead></TableHead>
                             </TableRow>
@@ -297,13 +304,13 @@ export function CommissionSummaryView() {
                         <TableBody>
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                                         Loading data...
                                     </TableCell>
                                 </TableRow>
                             ) : data.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                                         No data found for this period.
                                     </TableCell>
                                 </TableRow>
@@ -328,6 +335,8 @@ export function CommissionSummaryView() {
                                         <TableCell className="text-center">{staff.mainServices}</TableCell>
                                         <TableCell className="text-center">{staff.assistServices}</TableCell>
                                         <TableCell className="text-right">฿{staff.totalRevenue.toLocaleString()}</TableCell>
+                                        <TableCell className="text-right text-red-400">-{staff.totalCost?.toLocaleString()}</TableCell>
+                                        <TableCell className="text-right font-medium">฿{staff.totalProfit?.toLocaleString()}</TableCell>
                                         <TableCell className="text-right font-bold text-green-600">
                                             ฿{staff.totalCommission.toLocaleString()}
                                         </TableCell>
@@ -344,21 +353,25 @@ export function CommissionSummaryView() {
 
             {/* Detail Modal */}
             <Dialog open={!!selectedStaff} onOpenChange={(open) => !open && setSelectedStaff(null)}>
-                <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="text-xl">
                             {selectedStaff?.name} - Commission Details
                         </DialogTitle>
                     </DialogHeader>
 
-                    <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="grid grid-cols-4 gap-4 mb-6">
                         <div className="bg-slate-50 p-4 rounded-xl text-center">
                             <p className="text-xs text-muted-foreground mb-1">Services</p>
-                            <p className="text-xl font-bold">{selectedStaff?.totalServices}</p>
+                            <p className="text-xl font-bold">{selectedStaff?.mainServices} <span className="text-xs text-muted-foreground">({selectedStaff?.assistServices} assist)</span></p>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl text-center">
                             <p className="text-xs text-muted-foreground mb-1">Revenue</p>
-                            <p className="text-xl font-bold text-primary">฿{selectedStaff?.totalRevenue.toLocaleString()}</p>
+                            <p className="text-xl font-bold text-slate-700">฿{selectedStaff?.totalRevenue.toLocaleString()}</p>
+                        </div>
+                        <div className="bg-slate-50 p-4 rounded-xl text-center">
+                            <p className="text-xs text-muted-foreground mb-1">Profit</p>
+                            <p className="text-xl font-bold text-slate-900">฿{selectedStaff?.totalProfit?.toLocaleString()}</p>
                         </div>
                         <div className="bg-green-50 p-4 rounded-xl text-center">
                             <p className="text-xs text-green-700 mb-1">Commission</p>
@@ -373,18 +386,21 @@ export function CommissionSummaryView() {
                                 <TableHead>Service</TableHead>
                                 <TableHead>Category</TableHead>
                                 <TableHead className="text-right">Price</TableHead>
+                                <TableHead className="text-right">Cost</TableHead>
+                                <TableHead className="text-right">Profit</TableHead>
                                 <TableHead className="text-right">Commission</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {selectedStaff?.items.length === 0 ? (
+
+                            {!selectedStaff || selectedStaff.items.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
+                                    <TableCell colSpan={7} className="text-center py-4 text-muted-foreground">
                                         No services found.
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                selectedStaff?.items.map((item) => (
+                                selectedStaff.items.map((item: StaffSummary['items'][0]) => (
                                     <TableRow key={item.id}>
                                         <TableCell className="text-xs text-muted-foreground">
                                             {new Date(item.date).toLocaleDateString()} <br />
@@ -397,6 +413,8 @@ export function CommissionSummaryView() {
                                             </span>
                                         </TableCell>
                                         <TableCell className="text-right">฿{item.price.toLocaleString()}</TableCell>
+                                        <TableCell className="text-right text-red-400">-{item.cost > 0 ? `฿${item.cost.toLocaleString()}` : '-'}</TableCell>
+                                        <TableCell className="text-right font-medium">฿{item.profit?.toLocaleString() || 0}</TableCell>
                                         <TableCell className="text-right font-bold text-green-600">
                                             ฿{item.commission.toLocaleString()}
                                         </TableCell>
