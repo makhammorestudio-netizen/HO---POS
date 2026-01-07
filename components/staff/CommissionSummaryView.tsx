@@ -29,11 +29,13 @@ import {
     Tooltip,
     ResponsiveContainer
 } from 'recharts';
+import { StaffAvatar } from './StaffAvatar';
 
 interface StaffSummary {
     id: string;
     name: string;
     role: string;
+    avatar?: string | null;
     mainServices: number;
     assistServices: number;
     totalRevenue: number;
@@ -312,7 +314,12 @@ export function CommissionSummaryView() {
                                         className="cursor-pointer hover:bg-slate-50/50 transition-colors"
                                         onClick={() => setSelectedStaff(staff)}
                                     >
-                                        <TableCell className="font-medium">{staff.name}</TableCell>
+                                        <TableCell className="font-medium">
+                                            <div className="flex items-center gap-3">
+                                                <StaffAvatar name={staff.name} avatar={staff.avatar} size="sm" />
+                                                <span>{staff.name}</span>
+                                            </div>
+                                        </TableCell>
                                         <TableCell>
                                             <Badge variant="outline" className="text-xs font-normal">
                                                 {staff.role}

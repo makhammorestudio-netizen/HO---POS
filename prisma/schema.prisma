@@ -45,6 +45,7 @@ model User {
   name      String
   role      Role
   pin       String?  // Simple PIN for POS access
+  avatar    String?  // Avatar URL or preset ID
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

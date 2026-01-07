@@ -134,16 +134,16 @@ export default function TransactionsPage() {
             {/* Header & Filters */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Transactions</h2>
-                    <p className="text-muted-foreground">Revenue overview and sales history</p>
+                    <h2 className="text-3xl font-bold tracking-tight text-[#1F2A53]">Transactions</h2>
+                    <p className="text-[#4B5675]">Revenue overview and sales history</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-slate-100 shadow-sm">
+                    <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => setPresetDate('TODAY')}
-                            className={cn("text-xs", dateRange.start === new Date().toISOString().split('T')[0] && "bg-slate-100 font-bold")}
+                            className={cn("text-xs text-[#4B5675] hover:text-[#1F2A53]", dateRange.start === new Date().toISOString().split('T')[0] && "bg-slate-100 font-bold text-[#1F2A53]")}
                         >
                             Today
                         </Button>
@@ -151,7 +151,7 @@ export default function TransactionsPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => setPresetDate('WEEK')}
-                            className="text-xs"
+                            className="text-xs text-[#4B5675] hover:text-[#1F2A53]"
                         >
                             This Week
                         </Button>
@@ -159,7 +159,7 @@ export default function TransactionsPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => setPresetDate('MONTH')}
-                            className="text-xs"
+                            className="text-xs text-[#4B5675] hover:text-[#1F2A53]"
                         >
                             This Month
                         </Button>
@@ -169,18 +169,18 @@ export default function TransactionsPage() {
                             type="date"
                             value={dateRange.start}
                             onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                            className="w-36 h-9 bg-white"
+                            className="w-36 h-9 bg-white border-slate-200 text-[#1F2A53]"
                         />
-                        <span className="text-muted-foreground">-</span>
+                        <span className="text-[#4B5675]">-</span>
                         <Input
                             type="date"
                             value={dateRange.end}
                             onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                            className="w-36 h-9 bg-white"
+                            className="w-36 h-9 bg-white border-slate-200 text-[#1F2A53]"
                         />
                     </div>
                     <select
-                        className="h-9 rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        className="h-9 rounded-md border border-slate-200 bg-white px-3 py-1 text-sm text-[#1F2A53] shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                         value={filterMethod}
                         onChange={(e) => setFilterMethod(e.target.value)}
                     >
@@ -199,11 +199,11 @@ export default function TransactionsPage() {
                     <CardContent className="p-6">
                         <div className="flex items-start justify-between">
                             <div className="space-y-2">
-                                <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
+                                <p className="text-sm font-medium text-[#4B5675]">Total Revenue</p>
                                 <p className="metric-number text-primary">฿{data?.summary.totalRevenue.toLocaleString() || '0'}</p>
-                                <p className="text-xs text-muted-foreground">Selected period</p>
+                                <p className="text-xs text-[#4B5675] opacity-80">Selected period</p>
                             </div>
-                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-pastel-lavender">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100">
                                 <DollarSign className="h-6 w-6 text-primary" />
                             </div>
                         </div>
@@ -214,12 +214,12 @@ export default function TransactionsPage() {
                     <CardContent className="p-6">
                         <div className="flex items-start justify-between">
                             <div className="space-y-2">
-                                <p className="text-sm font-medium text-muted-foreground">Today's Revenue</p>
+                                <p className="text-sm font-medium text-[#4B5675]">Today's Revenue</p>
                                 <p className="metric-number text-green-600">฿{data?.summary.todayRevenue.toLocaleString() || '0'}</p>
-                                <p className="text-xs text-muted-foreground">All channels</p>
+                                <p className="text-xs text-[#4B5675] opacity-80">All channels</p>
                             </div>
-                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-pastel-peach">
-                                <TrendingUp className="h-6 w-6 text-orange-600" />
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100">
+                                <TrendingUp className="h-6 w-6 text-green-600" />
                             </div>
                         </div>
                     </CardContent>
@@ -228,14 +228,14 @@ export default function TransactionsPage() {
                 <Card className="bg-white border-0 rounded-friendly card-shadow md:col-span-2">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <p className="text-sm font-medium text-muted-foreground">Revenue by Method</p>
-                            <CreditCard className="h-4 w-4 text-muted-foreground" />
+                            <p className="text-sm font-medium text-[#4B5675]">Revenue by Method</p>
+                            <CreditCard className="h-4 w-4 text-[#4B5675]" />
                         </div>
                         <div className="grid grid-cols-4 gap-4">
                             {Object.entries(data?.summary.revenueByMethod || {}).map(([method, amount]) => (
                                 <div key={method} className="text-center">
-                                    <div className="text-xs font-medium text-muted-foreground mb-1">{method.replace('_', ' ')}</div>
-                                    <div className="font-bold text-lg">฿{amount.toLocaleString()}</div>
+                                    <div className="text-xs font-medium text-[#4B5675] mb-1">{method.replace('_', ' ')}</div>
+                                    <div className="font-bold text-lg text-[#1F2A53]">฿{amount.toLocaleString()}</div>
                                 </div>
                             ))}
                         </div>
@@ -249,11 +249,11 @@ export default function TransactionsPage() {
                 <div className="space-y-6">
                     <Card className="bg-white border-0 rounded-friendly card-shadow h-full">
                         <CardHeader>
-                            <CardTitle className="text-lg">Category Breakdown</CardTitle>
+                            <CardTitle className="text-lg text-[#1F2A53]">Category Breakdown</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {Object.entries(data?.summary.revenueByCategory || {}).map(([category, amount]) => (
-                                <div key={category} className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
+                                <div key={category} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
                                     <div className="flex items-center gap-3">
                                         <div className={cn("p-2 rounded-lg", getCategoryColor(category))}>
                                             {category === 'HAIR' && <Scissors className="h-4 w-4" />}
@@ -261,9 +261,9 @@ export default function TransactionsPage() {
                                             {category === 'LASH' && <Eye className="h-4 w-4" />}
                                             {category === 'PRODUCT' && <Package className="h-4 w-4" />}
                                         </div>
-                                        <span className="font-medium capitalize">{category.toLowerCase()}</span>
+                                        <span className="font-medium capitalize text-[#1F2A53]">{category.toLowerCase()}</span>
                                     </div>
-                                    <span className="font-bold">฿{amount.toLocaleString()}</span>
+                                    <span className="font-bold text-[#1F2A53]">฿{amount.toLocaleString()}</span>
                                 </div>
                             ))}
                         </CardContent>
@@ -274,54 +274,54 @@ export default function TransactionsPage() {
                 <div className="lg:col-span-2">
                     <Card className="bg-white border-0 rounded-friendly card-shadow">
                         <CardHeader>
-                            <CardTitle className="text-lg">Recent Transactions</CardTitle>
+                            <CardTitle className="text-lg text-[#1F2A53]">Recent Transactions</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                             <div className="relative overflow-x-auto">
                                 <table className="w-full text-sm text-left">
-                                    <thead className="text-xs text-muted-foreground uppercase bg-slate-50/50">
+                                    <thead className="text-xs text-[#1F2A53] uppercase bg-[#E7EEFF]">
                                         <tr>
-                                            <th className="px-6 py-3">Time</th>
-                                            <th className="px-6 py-3">Customer</th>
-                                            <th className="px-6 py-3">Services</th>
-                                            <th className="px-6 py-3">Method</th>
-                                            <th className="px-6 py-3 text-right">Amount</th>
+                                            <th className="px-6 py-3 font-semibold">Time</th>
+                                            <th className="px-6 py-3 font-semibold">Customer</th>
+                                            <th className="px-6 py-3 font-semibold">Services</th>
+                                            <th className="px-6 py-3 font-semibold">Method</th>
+                                            <th className="px-6 py-3 text-right font-semibold">Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {loading ? (
                                             <tr>
-                                                <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
+                                                <td colSpan={5} className="px-6 py-8 text-center text-[#4B5675]">
                                                     Loading transactions...
                                                 </td>
                                             </tr>
                                         ) : data?.transactions.length === 0 ? (
                                             <tr>
-                                                <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
+                                                <td colSpan={5} className="px-6 py-8 text-center text-[#4B5675]">
                                                     No transactions found for this period.
                                                 </td>
                                             </tr>
                                         ) : (
                                             data?.transactions.map((t) => (
-                                                <tr key={t.id} className="bg-white border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                                                    <td className="px-6 py-4 font-medium text-muted-foreground">
+                                                <tr key={t.id} className="bg-white border-b border-slate-50 hover:bg-[#E7EEFF]/50 transition-colors">
+                                                    <td className="px-6 py-4 font-medium text-[#4B5675]">
                                                         {new Date(t.createdAt).toLocaleDateString()} <br />
                                                         <span className="text-xs opacity-70">{new Date(t.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                                     </td>
-                                                    <td className="px-6 py-4 font-medium">
+                                                    <td className="px-6 py-4 font-semibold text-[#1F2A53]">
                                                         {t.customer?.name || 'Walk-in'}
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <div className="flex flex-col gap-1">
                                                             {t.items.map((item, i) => (
-                                                                <span key={i} className="text-xs bg-slate-100 px-2 py-0.5 rounded-full w-fit">
+                                                                <span key={i} className="text-xs bg-slate-100 text-[#4B5675] px-2 py-0.5 rounded-full w-fit border border-slate-200">
                                                                     {item.service.name}
                                                                 </span>
                                                             ))}
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground bg-slate-100 px-2 py-1 rounded-lg w-fit">
+                                                        <div className="flex items-center gap-2 text-xs font-medium text-[#4B5675] bg-slate-100 px-2 py-1 rounded-lg w-fit border border-slate-200">
                                                             {getMethodIcon(t.paymentMethod)}
                                                             {t.paymentMethod.replace('_', ' ')}
                                                         </div>

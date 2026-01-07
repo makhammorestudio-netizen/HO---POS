@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Plus, Sparkles, Trash2 } from 'lucide-react';
+import { Plus, Sparkles, Trash2, Scissors, Eye, Package, Droplet, Tag } from 'lucide-react';
 
 interface Service {
     id: string;
@@ -24,6 +24,32 @@ export default function ServicesPage() {
     const [newCategory, setNewCategory] = useState('HAIR');
     const [newPrice, setNewPrice] = useState('');
     const [newDuration, setNewDuration] = useState('60');
+
+    // --- Helpers & Config ---
+
+    const formatTHB = (amount: number) => {
+        return new Intl.NumberFormat("th-TH", {
+            style: "currency",
+            currency: "THB",
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+        }).format(amount);
+    };
+
+    const CATEGORY_META: Record<string, { icon: any; label: string }> = {
+        HAIR: { icon: Scissors, label: 'Hair' },
+        NAIL: { icon: Sparkles, label: 'Nail' },
+        LASH: { icon: Eye, label: 'Lash' },
+        PRODUCT: { icon: Package, label: 'Product' },
+        WAX: { icon: Droplet, label: 'Wax' },
+        OTHER: { icon: Tag, label: 'Other' },
+    };
+
+    // Fallback for unknown categories
+    const getCategoryMeta = (cat: string) => {
+        const key = cat?.toUpperCase();
+        return CATEGORY_META[key] || { icon: Tag, label: cat || 'Unknown' };
+    };
 
     const fetchServices = async () => {
         try {
@@ -74,6 +100,8 @@ export default function ServicesPage() {
         alert('Example services added!');
     };
 
+    const ActiveCategoryIcon = getCategoryMeta(newCategory).icon;
+
     return (
         <div className="space-y-8">
             <div className="flex items-center justify-between">
@@ -112,23 +140,27 @@ export default function ServicesPage() {
                             />
                         </div>
                         <div>
-                            <label className="text-sm font-medium">Category</label>
+                            <div className="flex items-center gap-2 mb-1.5">
+                                <label className="text-sm font-medium">Category</label>
+                                <ActiveCategoryIcon className="h-3 w-3 text-muted-foreground" />
+                            </div>
                             <select
                                 className="flex h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm"
                                 value={newCategory}
                                 onChange={e => setNewCategory(e.target.value)}
                             >
-                                <option value="HAIR">Hair</option>
-                                <option value="NAIL">Nail</option>
-                                <option value="LASH">Lash</option>
-                                <option value="PRODUCT">Product</option>
+                                {Object.keys(CATEGORY_META).map(catKey => (
+                                    <option key={catKey} value={catKey}>
+                                        {CATEGORY_META[catKey].label}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div>
-                            <label className="text-sm font-medium">Price ($)</label>
+                            <label className="text-sm font-medium">Price (THB)</label>
                             <Input
                                 type="number"
-                                placeholder="0.00"
+                                placeholder="0"
                                 value={newPrice}
                                 onChange={e => setNewPrice(e.target.value)}
                                 className="bg-white/5 border-white/10"
@@ -144,22 +176,42 @@ export default function ServicesPage() {
 
             {/* Services List */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {services.map(service => (
-                    <Card key={service.id} className="glass border-0">
-                        <CardContent className="pt-6 flex justify-between items-start">
-                            <div>
-                                <div className="inline-flex items-center rounded-full border border-white/10 px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground mb-2">
-                                    {service.category}
+                {services.map(service => {
+                    const meta = getCategoryMeta(service.category);
+                    const Icon = meta.icon;
+                    return (
+                        <Card key={service.id} className="glass border-0 overflow-hidden">
+                            <CardContent className="pt-6 relative">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="flex gap-4">
+                                        {/* Icon Badge */}
+                                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-[#E5E6FF] flex items-center justify-center">
+                                            <Icon className="h-5 w-5 text-[#1F3C88]" />
+                                        </div>
+
+                                        <div>
+                                            {/* Category Pill */}
+                                            <div className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold mb-1
+                                                bg-[rgba(229,230,255,0.8)] text-[#1F3C88] border border-[rgba(31,60,136,0.10)]">
+                                                {meta.label}
+                                            </div>
+                                            <h3 className="font-semibold text-lg leading-tight">{service.name}</h3>
+                                        </div>
+                                    </div>
                                 </div>
-                                <h3 className="font-semibold text-lg">{service.name}</h3>
-                                <p className="text-sm text-muted-foreground">{service.durationMin} mins</p>
-                            </div>
-                            <div className="text-xl font-bold">
-                                ${Number(service.price).toFixed(2)}
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
+
+                                <div className="flex items-center justify-between mt-4">
+                                    <p className="text-sm text-muted-foreground bg-white/5 px-2 py-1 rounded">
+                                        {service.durationMin} min
+                                    </p>
+                                    <div className="text-xl font-bold tracking-tight">
+                                        {formatTHB(Number(service.price))}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
             </div>
         </div>
     );

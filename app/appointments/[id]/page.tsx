@@ -94,10 +94,10 @@ export default function EditAppointmentPage({ params }: { params: { id: string }
                 <Button variant="ghost" size="icon" onClick={() => router.back()}>
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <h1 className="text-2xl font-bold">Edit Appointment</h1>
+                <h1 className="text-2xl font-bold text-[#1F2A53]">Edit Appointment</h1>
             </div>
 
-            <Card className="glass border-0">
+            <Card className="bg-white border-0 rounded-friendly card-shadow">
                 <CardContent className="p-6">
                     <AppointmentForm
                         initialData={appointment}

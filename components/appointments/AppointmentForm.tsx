@@ -97,30 +97,32 @@ export function AppointmentForm({
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4">
                 <div className="grid gap-2">
-                    <label className="text-sm font-medium">Customer Name</label>
+                    <label className="text-sm font-semibold text-[#1F2A53]">Customer Name</label>
                     <Input
                         required
                         value={formData.customerName}
                         onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
                         placeholder="Enter name (Khun will be added automatically)"
+                        className="border-slate-200 focus:border-primary focus:ring-primary/20 text-[#1F2A53]"
                     />
                 </div>
 
                 <div className="grid gap-2">
-                    <label className="text-sm font-medium">Phone Number</label>
+                    <label className="text-sm font-semibold text-[#1F2A53]">Phone Number</label>
                     <Input
                         required
                         value={formData.customerPhone}
                         onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
                         placeholder="Enter phone number"
+                        className="border-slate-200 focus:border-primary focus:ring-primary/20 text-[#1F2A53]"
                     />
                 </div>
 
                 <div className="grid gap-2">
-                    <label className="text-sm font-medium">Service</label>
+                    <label className="text-sm font-semibold text-[#1F2A53]">Service</label>
                     <select
                         required
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        className="flex h-10 w-full rounded-md border border-slate-200 bg-background px-3 py-2 text-sm text-[#1F2A53] focus:border-primary focus:ring-primary/20 focus:outline-none"
                         value={formData.serviceId}
                         onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })}
                     >
@@ -134,9 +136,9 @@ export function AppointmentForm({
                 </div>
 
                 <div className="grid gap-2">
-                    <label className="text-sm font-medium">Staff (Optional)</label>
+                    <label className="text-sm font-semibold text-[#1F2A53]">Staff (Optional)</label>
                     <select
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        className="flex h-10 w-full rounded-md border border-slate-200 bg-background px-3 py-2 text-sm text-[#1F2A53] focus:border-primary focus:ring-primary/20 focus:outline-none"
                         value={formData.staffId}
                         onChange={(e) => setFormData({ ...formData, staffId: e.target.value })}
                     >
@@ -149,41 +151,44 @@ export function AppointmentForm({
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                        <label className="text-sm font-medium">Date</label>
+                        <label className="text-sm font-semibold text-[#1F2A53]">Date</label>
                         <Input
                             required
                             type="date"
                             value={formData.date}
                             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                            className="border-slate-200 focus:border-primary focus:ring-primary/20 text-[#1F2A53]"
                         />
                     </div>
 
                     <div className="grid gap-2">
-                        <label className="text-sm font-medium">Time</label>
+                        <label className="text-sm font-semibold text-[#1F2A53]">Time</label>
                         <Input
                             required
                             type="time"
                             value={formData.time}
                             onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                            className="border-slate-200 focus:border-primary focus:ring-primary/20 text-[#1F2A53]"
                         />
                     </div>
                 </div>
 
                 <div className="grid gap-2">
-                    <label className="text-sm font-medium">Deposit (฿)</label>
+                    <label className="text-sm font-semibold text-[#1F2A53]">Deposit (฿)</label>
                     <Input
                         type="number"
                         step="0.01"
                         value={formData.deposit}
                         onChange={(e) => setFormData({ ...formData, deposit: e.target.value })}
                         placeholder="0.00"
+                        className="border-slate-200 focus:border-primary focus:ring-primary/20 text-[#1F2A53]"
                     />
                 </div>
 
                 <div className="grid gap-2">
-                    <label className="text-sm font-medium">Notes</label>
+                    <label className="text-sm font-semibold text-[#1F2A53]">Notes</label>
                     <textarea
-                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        className="flex min-h-[80px] w-full rounded-md border border-slate-200 bg-background px-3 py-2 text-sm text-[#1F2A53] focus:border-primary focus:ring-primary/20 focus:outline-none"
                         value={formData.notes}
                         onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                         placeholder="Additional notes..."
@@ -193,13 +198,25 @@ export function AppointmentForm({
 
             <div className="flex justify-between gap-2 pt-4">
                 {initialData && onDelete && (
-                    <Button type="button" variant="destructive" onClick={onDelete} disabled={isSubmitting}>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={onDelete}
+                        disabled={isSubmitting}
+                    >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete
                     </Button>
                 )}
                 <div className="flex gap-2 ml-auto">
-                    <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        className="text-[#1F2A53] hover:bg-slate-50"
+                        onClick={onCancel}
+                        disabled={isSubmitting}
+                    >
                         Cancel
                     </Button>
                     <Button type="submit" disabled={isSubmitting}>

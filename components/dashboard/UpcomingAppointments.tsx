@@ -56,20 +56,15 @@ export function UpcomingAppointments() {
 
     const getCategoryColor = (category: string) => {
         switch (category) {
-            case 'HAIR': return 'bg-pastel-lavender/50 border-indigo-100 hover:bg-pastel-lavender';
-            case 'NAIL': return 'bg-pastel-peach/50 border-orange-100 hover:bg-pastel-peach';
-            case 'LASH': return 'bg-pastel-coral/50 border-red-100 hover:bg-pastel-coral';
-            default: return 'bg-slate-50 border-slate-100 hover:bg-slate-100';
+            case 'HAIR': return 'bg-purple-100 border-purple-200 hover:bg-purple-200';
+            case 'NAIL': return 'bg-orange-100 border-orange-200 hover:bg-orange-200';
+            case 'LASH': return 'bg-blue-100 border-blue-200 hover:bg-blue-200';
+            default: return 'bg-gray-100 border-gray-200 hover:bg-gray-200';
         }
     };
 
     const getPriceColor = (category: string) => {
-        switch (category) {
-            case 'HAIR': return 'text-primary';
-            case 'NAIL': return 'text-orange-600';
-            case 'LASH': return 'text-red-600';
-            default: return 'text-slate-600';
-        }
+        return 'text-[#1F2A53]';
     };
 
     const getInitials = (name: string) => {
@@ -191,37 +186,25 @@ export function UpcomingAppointments() {
                                 key={apt.id}
                                 onClick={() => router.push(`/appointments/${apt.id}`)}
                                 className={cn(
-                                    "flex items-center gap-4 rounded-2xl border p-4 transition-all cursor-pointer group",
+                                    "group flex items-center justify-between rounded-lg border p-4 transition-all cursor-pointer",
                                     getCategoryColor(apt.service.category)
                                 )}
                             >
-                                <Avatar className="h-12 w-12 shrink-0 border-2 border-white shadow-sm">
-                                    <AvatarFallback className="bg-white text-primary font-bold">
-                                        {getInitials(apt.customerName)}
-                                    </AvatarFallback>
-                                </Avatar>
-
-                                <div className="flex-1 min-w-0">
-                                    <div className="font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                                <div className="flex flex-col gap-1">
+                                    <div className="font-semibold text-[16px] text-[#1F2A53] group-hover:text-primary transition-colors">
                                         {apt.customerName}
                                     </div>
-                                    <div className="text-sm font-medium opacity-80 truncate">{apt.service.name}</div>
-                                    <div className="flex items-center gap-3 text-xs font-medium opacity-60 mt-1.5">
-                                        <div className="flex items-center gap-1 bg-white/50 px-2 py-0.5 rounded-full">
-                                            <Clock className="h-3 w-3" />
-                                            <span>{formatTimeRange(apt.scheduledAt, apt.service.durationMin)}</span>
-                                        </div>
-                                        {apt.staff && (
-                                            <div className="flex items-center gap-1">
-                                                <div className="w-1 h-1 rounded-full bg-current" />
-                                                <span>{apt.staff.name}</span>
-                                            </div>
-                                        )}
-                                    </div>
+                                    <div className="text-sm text-[#4B5675]">{apt.service.name}</div>
                                 </div>
 
-                                <div className={cn("font-bold text-lg shrink-0 bg-white/50 px-3 py-1 rounded-lg", getPriceColor(apt.service.category))}>
-                                    ${apt.service.price}
+                                <div className="flex flex-col items-end gap-1">
+                                    <div className="flex items-center gap-1.5 text-[#1F2A53] font-medium text-sm">
+                                        <Clock className="h-3.5 w-3.5" />
+                                        <span>{formatTimeRange(apt.scheduledAt, apt.service.durationMin)}</span>
+                                    </div>
+                                    <div className="text-xs font-medium text-[#4B5675] opacity-75">
+                                        ${apt.service.price}
+                                    </div>
                                 </div>
                             </div>
                         ))

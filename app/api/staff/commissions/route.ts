@@ -104,6 +104,7 @@ export async function GET(request: Request) {
                 id: staff.id,
                 name: staff.name,
                 role: staff.role,
+                avatar: staff.avatar,
                 mainServices,
                 assistServices,
                 totalRevenue,

@@ -10,7 +10,7 @@ export async function PUT(
 ) {
     try {
         const body = await request.json();
-        const { name, role, pin } = body;
+        const { name, role, pin, avatar } = body;
 
         const updatedStaff = await prisma.user.update({
             where: { id: params.id },
@@ -18,6 +18,7 @@ export async function PUT(
                 name,
                 role: role as Role,
                 pin,
+                avatar,
             },
         });
 

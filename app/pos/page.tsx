@@ -19,6 +19,7 @@ import {
     Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { StaffAvatar } from '@/components/staff/StaffAvatar';
 
 // Types
 interface Service {
@@ -33,6 +34,7 @@ interface Staff {
     id: string;
     name: string;
     role: 'STYLIST' | 'TECHNICIAN' | 'ASSISTANT';
+    avatar?: string | null;
 }
 
 interface CartItem {
@@ -285,36 +287,61 @@ export default function POSPage() {
                                 {/* Staff Selection */}
                                 <div className="space-y-2 text-sm">
                                     {/* Main Staff - STYLIST or TECHNICIAN only */}
-                                    <select
-                                        className="w-full rounded bg-white px-2 py-1 text-xs border border-slate-200 text-foreground"
-                                        value={item.mainStaffId}
-                                        onChange={(e) => updateItemStaff(index, 'mainStaffId', e.target.value)}
-                                    >
-                                        <option value="">Select Main Staff</option>
-                                        {(() => {
-                                            const mainStaffOptions = staff.filter(s => s.role === 'STYLIST' || s.role === 'TECHNICIAN');
-                                            console.log('🎯 Main staff options:', mainStaffOptions.map(s => ({ name: s.name, role: s.role })));
-                                            return mainStaffOptions.map(s => {
-                                                const roleDisplay = s.role === 'STYLIST' ? 'Stylist' : 'Technician';
-                                                return (
-                                                    <option key={s.id} value={s.id}>{s.name} ({roleDisplay})</option>
-                                                );
-                                            });
-                                        })()}
-                                    </select>
+                                    <div className="flex items-center gap-2">
+                                        <div className="shrink-0">
+                                            <StaffAvatar
+                                                name={staff.find(s => s.id === item.mainStaffId)?.name || "?"}
+                                                avatar={staff.find(s => s.id === item.mainStaffId)?.avatar}
+                                                size="sm"
+                                                className="h-8 w-8"
+                                            />
+                                        </div>
+                                        <select
+                                            className="w-full rounded bg-white px-2 py-1 text-xs border border-slate-200 text-foreground h-8"
+                                            value={item.mainStaffId}
+                                            onChange={(e) => updateItemStaff(index, 'mainStaffId', e.target.value)}
+                                        >
+                                            <option value="">Select Main Staff</option>
+                                            {(() => {
+                                                const mainStaffOptions = staff.filter(s => s.role === 'STYLIST' || s.role === 'TECHNICIAN');
+                                                return mainStaffOptions.map(s => {
+                                                    const roleDisplay = s.role === 'STYLIST' ? 'Stylist' : 'Technician';
+                                                    return (
+                                                        <option key={s.id} value={s.id}>{s.name} ({roleDisplay})</option>
+                                                    );
+                                                });
+                                            })()}
+                                        </select>
+                                    </div>
 
                                     {/* Assistant - ASSISTANT only, HAIR services only */}
                                     {item.service.category === 'HAIR' && (
-                                        <select
-                                            className="w-full rounded bg-white px-2 py-1 text-xs border border-slate-200 text-foreground"
-                                            value={item.assistantId || ''}
-                                            onChange={(e) => updateItemStaff(index, 'assistantId', e.target.value)}
-                                        >
-                                            <option value="">No Assistant</option>
-                                            {staff.filter(s => s.role === 'ASSISTANT').map(s => (
-                                                <option key={s.id} value={s.id}>{s.name}</option>
-                                            ))}
-                                        </select>
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <div className="shrink-0">
+                                                {item.assistantId ? (
+                                                    <StaffAvatar
+                                                        name={staff.find(s => s.id === item.assistantId)?.name || "?"}
+                                                        avatar={staff.find(s => s.id === item.assistantId)?.avatar}
+                                                        size="sm"
+                                                        className="h-8 w-8"
+                                                    />
+                                                ) : (
+                                                    <div className="h-8 w-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs text-muted-foreground">
+                                                        -
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <select
+                                                className="w-full rounded bg-white px-2 py-1 text-xs border border-slate-200 text-foreground h-8"
+                                                value={item.assistantId || ''}
+                                                onChange={(e) => updateItemStaff(index, 'assistantId', e.target.value)}
+                                            >
+                                                <option value="">No Assistant</option>
+                                                {staff.filter(s => s.role === 'ASSISTANT').map(s => (
+                                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     )}
                                 </div>
 
