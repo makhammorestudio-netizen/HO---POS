@@ -32,8 +32,8 @@ export function ServiceFormModal({ isOpen, onClose, onSave, initialData }: Servi
             if (initialData) {
                 setFormData({
                     ...initialData,
-                    price: Number(initialData.price),
-                    cogs: Number(initialData.cogs || 0),
+                    price: Number(initialData.price as any),
+                    cogs: Number(initialData.cogs as any || 0),
                 });
             } else {
                 setFormData({
@@ -168,7 +168,7 @@ export function ServiceFormModal({ isOpen, onClose, onSave, initialData }: Servi
 
                     <div className="text-xs text-muted-foreground text-right">
                         Estimated Profit: <span className="font-bold text-[#1F3C88]">
-                            {Math.max(0, (Number(formData.price || 0) - Number(formData.cogs || 0))).toLocaleString()} THB
+                            {Math.max(0, (Number(formData.price as any || 0) - Number(formData.cogs as any || 0))).toLocaleString()} THB
                         </span>
                     </div>
 

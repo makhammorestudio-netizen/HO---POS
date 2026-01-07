@@ -11,10 +11,10 @@ export const validateServiceForm = (data: Partial<Service>): { isValid: boolean;
     if (!data.category) {
         return { isValid: false, error: "Category is required" };
     }
-    if (data.price === undefined || Number(data.price) < 0) {
+    if (data.price === undefined || Number(data.price as any) < 0) {
         return { isValid: false, error: "Price must be a positive number" };
     }
-    if (data.cogs !== undefined && Number(data.cogs) < 0) {
+    if (data.cogs !== undefined && Number(data.cogs as any) < 0) {
         return { isValid: false, error: "Cost (COGS) cannot be negative" };
     }
     return { isValid: true };

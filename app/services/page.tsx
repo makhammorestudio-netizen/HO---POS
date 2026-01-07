@@ -170,8 +170,8 @@ export default function ServicesPage() {
                                     <div className="flex items-end justify-between mt-4 pt-4 border-t border-slate-50">
                                         <div className="text-sm">
                                             <div className="text-muted-foreground mb-1">{service.durationMin} min</div>
-                                            {Number(service.cogs) > 0 && (
-                                                <div className="text-xs text-slate-400">Cost: {formatTHB(service.cogs)}</div>
+                                            {Number(service.cogs as any) > 0 && (
+                                                <div className="text-xs text-slate-400">Cost: {formatTHB(service.cogs as any)}</div>
                                             )}
                                         </div>
                                         <div className="text-xl font-bold tracking-tight text-[#1F3C88]">
