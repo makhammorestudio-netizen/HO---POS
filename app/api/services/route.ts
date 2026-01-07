@@ -26,7 +26,7 @@ export async function POST(request: Request) {
                 price: Number(price),
                 cogs: Number(body.cogs || 0),
                 durationMin: Number(durationMin),
-            },
+            } as any,
         });
 
         return NextResponse.json(newService);

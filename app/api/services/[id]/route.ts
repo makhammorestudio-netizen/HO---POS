@@ -17,7 +17,7 @@ export async function PUT(
                 price: Number(price),
                 cogs: Number(cogs || 0),
                 durationMin: Number(durationMin),
-            },
+            } as any,
         });
 
         return NextResponse.json(updatedService);

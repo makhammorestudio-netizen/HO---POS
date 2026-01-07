@@ -196,14 +196,14 @@ export function CommissionSummaryView() {
                     <Input
                         type="date"
                         value={dateRange.start}
-                        onChange={(e) => handleDateChange('start', e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleDateChange('start', e.target.value)}
                         className="w-36 h-9 bg-white border-slate-200"
                     />
                     <span className="text-muted-foreground">-</span>
                     <Input
                         type="date"
                         value={dateRange.end}
-                        onChange={(e) => handleDateChange('end', e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleDateChange('end', e.target.value)}
                         className="w-36 h-9 bg-white border-slate-200"
                     />
                 </div>

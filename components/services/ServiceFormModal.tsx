@@ -146,7 +146,7 @@ export function ServiceFormModal({ isOpen, onClose, onSave, initialData }: Servi
                                 type="number"
                                 min="0"
                                 value={formData.price}
-                                onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, price: Number(e.target.value) })}
                             />
                         </div>
 
@@ -160,7 +160,7 @@ export function ServiceFormModal({ isOpen, onClose, onSave, initialData }: Servi
                                 type="number"
                                 min="0"
                                 value={formData.cogs}
-                                onChange={(e) => setFormData({ ...formData, cogs: Number(e.target.value) })}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, cogs: Number(e.target.value) })}
                                 className="bg-slate-50 border-slate-200"
                             />
                         </div>

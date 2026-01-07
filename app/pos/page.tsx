@@ -338,7 +338,7 @@ export default function POSPage() {
                                             <select
                                                 className="w-full rounded bg-white px-2 py-1 text-xs border border-slate-200 text-foreground h-8"
                                                 value={item.assistantId || ''}
-                                                onChange={(e) => updateItemStaff(index, 'assistantId', e.target.value)}
+                                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateItemStaff(index, 'assistantId', e.target.value)}
                                             >
                                                 <option value="">No Assistant</option>
                                                 {staff.filter(s => s.role === 'ASSISTANT').map(s => (
