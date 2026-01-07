@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { PaymentMethod, CommissionType } from '@prisma/client';
+import { PaymentMethod } from '@prisma/client';
 
 export async function POST(request: Request) {
     try {
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
                         return createdItems;
                     }),
                 },
-            },
+            } as any,
             include: {
                 items: {
                     include: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -95,7 +95,7 @@ export default function POSPage() {
 
     const addToCart = (service: Service) => {
         // Default to first stylist or technician
-        const defaultMain = staff.find(s => s.role === 'STYLIST' || s.role === 'TECHNICIAN')?.id || '';
+        const defaultMain = staff.find((s: Staff) => s.role === 'STYLIST' || s.role === 'TECHNICIAN')?.id || '';
         setCart([...cart, {
             service,
             mainStaffId: defaultMain,
@@ -126,7 +126,7 @@ export default function POSPage() {
         }
     };
 
-    const totalAmount = cart.reduce((sum, item) => sum + item.price, 0);
+    const totalAmount = cart.reduce((sum: number, item: CartItem) => sum + item.price, 0);
 
     const handleCheckout = async () => {
         if (cart.length === 0) return;
@@ -171,7 +171,7 @@ export default function POSPage() {
         }
     };
 
-    const filteredServices = services.filter(s => {
+    const filteredServices = services.filter((s: Service) => {
         const matchesCategory = selectedCategory === 'ALL' || s.category === selectedCategory;
         const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
@@ -219,7 +219,7 @@ export default function POSPage() {
 
                 {/* Service Grid */}
                 <div className="grid grid-cols-2 gap-4 overflow-y-auto pr-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {filteredServices.map(service => (
+                    {filteredServices.map((service: Service) => (
                         <button
                             key={service.id}
                             onClick={() => addToCart(service)}
@@ -273,7 +273,7 @@ export default function POSPage() {
                             <p>Cart is empty</p>
                         </div>
                     ) : (
-                        cart.map((item, index) => (
+                        cart.map((item: CartItem, index: number) => (
                             <div key={index} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                                 <div className="flex justify-between items-start mb-2">
                                     <span className="font-medium text-foreground">{item.service.name}</span>
@@ -283,7 +283,7 @@ export default function POSPage() {
                                             type="number"
                                             className="h-7 w-20 px-1 py-0 text-right font-bold bg-white border-slate-200"
                                             value={item.price}
-                                            onChange={(e) => updateItemPrice(index, e.target.value)}
+                                            onChange={(e: ChangeEvent<HTMLInputElement>) => updateItemPrice(index, e.target.value)}
                                         />
                                     </div>
                                 </div>
@@ -294,8 +294,8 @@ export default function POSPage() {
                                     <div className="flex items-center gap-2">
                                         <div className="shrink-0">
                                             <StaffAvatar
-                                                name={staff.find(s => s.id === item.mainStaffId)?.name || "?"}
-                                                avatar={staff.find(s => s.id === item.mainStaffId)?.avatar}
+                                                name={staff.find((s: Staff) => s.id === item.mainStaffId)?.name || "?"}
+                                                avatar={staff.find((s: Staff) => s.id === item.mainStaffId)?.avatar}
                                                 size="sm"
                                                 className="h-8 w-8"
                                             />
@@ -303,12 +303,12 @@ export default function POSPage() {
                                         <select
                                             className="w-full rounded bg-white px-2 py-1 text-xs border border-slate-200 text-foreground h-8"
                                             value={item.mainStaffId}
-                                            onChange={(e) => updateItemStaff(index, 'mainStaffId', e.target.value)}
+                                            onChange={(e: ChangeEvent<HTMLSelectElement>) => updateItemStaff(index, 'mainStaffId', e.target.value)}
                                         >
                                             <option value="">Select Main Staff</option>
                                             {(() => {
-                                                const mainStaffOptions = staff.filter(s => s.role === 'STYLIST' || s.role === 'TECHNICIAN');
-                                                return mainStaffOptions.map(s => {
+                                                const mainStaffOptions = staff.filter((s: Staff) => s.role === 'STYLIST' || s.role === 'TECHNICIAN');
+                                                return mainStaffOptions.map((s: Staff) => {
                                                     const roleDisplay = s.role === 'STYLIST' ? 'Stylist' : 'Technician';
                                                     return (
                                                         <option key={s.id} value={s.id}>{s.name} ({roleDisplay})</option>
@@ -324,8 +324,8 @@ export default function POSPage() {
                                             <div className="shrink-0">
                                                 {item.assistantId ? (
                                                     <StaffAvatar
-                                                        name={staff.find(s => s.id === item.assistantId)?.name || "?"}
-                                                        avatar={staff.find(s => s.id === item.assistantId)?.avatar}
+                                                        name={staff.find((s: Staff) => s.id === item.assistantId)?.name || "?"}
+                                                        avatar={staff.find((s: Staff) => s.id === item.assistantId)?.avatar}
                                                         size="sm"
                                                         className="h-8 w-8"
                                                     />
@@ -338,10 +338,10 @@ export default function POSPage() {
                                             <select
                                                 className="w-full rounded bg-white px-2 py-1 text-xs border border-slate-200 text-foreground h-8"
                                                 value={item.assistantId || ''}
-                                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateItemStaff(index, 'assistantId', e.target.value)}
+                                                onChange={(e: ChangeEvent<HTMLSelectElement>) => updateItemStaff(index, 'assistantId', e.target.value)}
                                             >
                                                 <option value="">No Assistant</option>
-                                                {staff.filter(s => s.role === 'ASSISTANT').map(s => (
+                                                {staff.filter((s: Staff) => s.role === 'ASSISTANT').map((s: Staff) => (
                                                     <option key={s.id} value={s.id}>{s.name}</option>
                                                 ))}
                                             </select>
@@ -366,7 +366,7 @@ export default function POSPage() {
                     <Input
                         placeholder="Add note / coupon..."
                         value={note}
-                        onChange={(e) => setNote(e.target.value)}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => setNote(e.target.value)}
                         className="bg-white border-slate-200"
                     />
 
