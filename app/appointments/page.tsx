@@ -9,11 +9,11 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from '@/components/ui/dialog';
 import { ChevronLeft, ChevronRight, Plus, Clock, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentForm } from '@/components/appointments/AppointmentForm';
+import { NewAppointmentModal } from '@/components/appointments/NewAppointmentModal';
 
 interface Appointment {
     id: string;
@@ -54,9 +54,9 @@ export default function AppointmentsPage() {
     const [services, setServices] = useState<Service[]>([]);
     const [staff, setStaff] = useState<Staff[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-    const [viewMode, setViewMode] = useState<'list' | 'create'>('list');
 
     useEffect(() => {
         fetchAppointments();
@@ -105,7 +105,6 @@ export default function AppointmentsPage() {
 
     const handleDateClick = (date: Date) => {
         setSelectedDate(date);
-        setViewMode('list');
         setIsDialogOpen(true);
     };
 
@@ -123,6 +122,7 @@ export default function AppointmentsPage() {
             });
 
             if (res.ok) {
+                setIsCreateModalOpen(false);
                 setIsDialogOpen(false);
                 fetchAppointments();
             } else {
@@ -200,133 +200,129 @@ export default function AppointmentsPage() {
                     <p className="text-muted-foreground">Manage your salon bookings</p>
                 </div>
 
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button className="gap-2" onClick={() => {
-                            setSelectedDate(new Date());
-                            setViewMode('create');
-                        }}>
-                            <Plus className="h-4 w-4" />
-                            Add Appointment
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
-                        <DialogHeader>
-                            <DialogTitle>
-                                {viewMode === 'create' ? 'New Appointment' :
-                                    selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-                            </DialogTitle>
-                        </DialogHeader>
+                <Button className="gap-2" onClick={() => {
+                    setSelectedDate(new Date());
+                    setIsCreateModalOpen(true);
+                }}>
+                    <Plus className="h-4 w-4" />
+                    Add Appointment
+                </Button>
+            </div>
 
-                        {viewMode === 'list' ? (
-                            <div className="flex-1 overflow-hidden flex flex-col gap-4">
-                                <div className="flex-1 overflow-y-auto space-y-2 pr-2">
-                                    {selectedDateAppointments.length > 0 ? (
-                                        selectedDateAppointments.map(apt => (
-                                            <div
-                                                key={apt.id}
-                                                className="group flex items-center justify-between rounded-lg border border-[rgba(31,60,136,0.12)] bg-[#E7EEFF] p-5 transition-all hover:border-[rgba(31,60,136,0.25)]"
-                                            >
-                                                <div className="flex flex-1 items-center justify-between mr-4">
-                                                    {/* Left Side: Name & Service */}
-                                                    <div className="flex flex-col gap-1">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-[18px] font-semibold text-[#1F2A53]">
-                                                                {apt.customerName}
-                                                            </span>
-                                                            {/* Status Badge - Optional, keeping small */}
-                                                            {apt.status !== 'SCHEDULED' && (
-                                                                <span className={cn(
-                                                                    "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
-                                                                    apt.status === 'COMPLETED' && "bg-green-100 text-green-700",
-                                                                    apt.status === 'CANCELLED' && "bg-red-100 text-red-700",
-                                                                    apt.status === 'NO_SHOW' && "bg-orange-100 text-orange-700"
-                                                                )}>
-                                                                    {apt.status}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <div className="text-[15px] font-normal text-[#4B5675]">
-                                                            {apt.service.name} {apt.staff && <span className="text-sm opacity-75">• {apt.staff.name}</span>}
-                                                        </div>
-                                                    </div>
+            {/* Custom Modal for Creation */}
+            <NewAppointmentModal
+                open={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSubmit={() => { }} // Triggered via 'form' id on submit button
+                title="New Appointment"
+            >
+                <AppointmentForm
+                    initialData={{ scheduledAt: selectedDate.toISOString() }}
+                    services={services}
+                    staff={staff}
+                    onSubmit={handleCreate}
+                    onCancel={() => setIsCreateModalOpen(false)}
+                    hideButtons={true}
+                />
+            </NewAppointmentModal>
 
-                                                    {/* Right Side: Time */}
-                                                    <div className="flex items-center gap-2 text-[#1F2A53] font-medium text-[15px]">
-                                                        <Clock className="h-4 w-4" />
-                                                        {new Date(apt.scheduledAt).toLocaleTimeString('en-US', {
-                                                            hour: '2-digit',
-                                                            minute: '2-digit',
-                                                            hour12: false
-                                                        })}
-                                                    </div>
+            {/* Dialog for Day View */}
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="flex-1 overflow-hidden flex flex-col gap-4">
+                        <div className="flex-1 overflow-y-auto space-y-2 pr-2">
+                            {selectedDateAppointments.length > 0 ? (
+                                selectedDateAppointments.map(apt => (
+                                    <div
+                                        key={apt.id}
+                                        className="group flex items-center justify-between rounded-lg border border-[rgba(31,60,136,0.12)] bg-[#E7EEFF] p-5 transition-all hover:border-[rgba(31,60,136,0.25)]"
+                                    >
+                                        <div className="flex flex-1 items-center justify-between mr-4">
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[18px] font-semibold text-[#1F2A53]">
+                                                        {apt.customerName}
+                                                    </span>
+                                                    {apt.status !== 'SCHEDULED' && (
+                                                        <span className={cn(
+                                                            "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+                                                            apt.status === 'COMPLETED' && "bg-green-100 text-green-700",
+                                                            apt.status === 'CANCELLED' && "bg-red-100 text-red-700",
+                                                            apt.status === 'NO_SHOW' && "bg-orange-100 text-orange-700"
+                                                        )}>
+                                                            {apt.status}
+                                                        </span>
+                                                    )}
                                                 </div>
-
-                                                {/* Actions */}
-                                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-8 w-8 p-0 hover:bg-white/50 text-[#1F2A53]"
-                                                        onClick={() => router.push(`/appointments/${apt.id}`)}
-                                                    >
-                                                        Edit
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
-                                                        onClick={async (e) => {
-                                                            e.stopPropagation();
-                                                            if (confirm('Are you sure you want to delete this appointment?')) {
-                                                                try {
-                                                                    const res = await fetch(`/api/appointments/${apt.id}`, { method: 'DELETE' });
-                                                                    if (res.ok) {
-                                                                        fetchAppointments();
-                                                                    } else {
-                                                                        alert('Failed to delete appointment');
-                                                                    }
-                                                                } catch (err) {
-                                                                    console.error(err);
-                                                                    alert('Error deleting appointment');
-                                                                }
-                                                            }
-                                                        }}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                                <div className="text-[15px] font-normal text-[#4B5675]">
+                                                    {apt.service.name} {apt.staff && <span className="text-sm opacity-75">• {apt.staff.name}</span>}
                                                 </div>
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div className="text-center py-12 text-muted-foreground">
-                                            No appointments for this day
+
+                                            <div className="flex items-center gap-2 text-[#1F2A53] font-medium text-[15px]">
+                                                <Clock className="h-4 w-4" />
+                                                {new Date(apt.scheduledAt).toLocaleTimeString('en-US', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: false
+                                                })}
+                                            </div>
                                         </div>
-                                    )}
+
+                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 w-8 p-0 hover:bg-white/50 text-[#1F2A53]"
+                                                onClick={() => router.push(`/appointments/${apt.id}`)}
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    if (confirm('Are you sure you want to delete this appointment?')) {
+                                                        try {
+                                                            const res = await fetch(`/api/appointments/${apt.id}`, { method: 'DELETE' });
+                                                            if (res.ok) {
+                                                                fetchAppointments();
+                                                            } else {
+                                                                alert('Failed to delete appointment');
+                                                            }
+                                                        } catch (err) {
+                                                            console.error(err);
+                                                            alert('Error deleting appointment');
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-12 text-muted-foreground">
+                                    No appointments for this day
                                 </div>
-                                <Button className="w-full shrink-0" onClick={() => setViewMode('create')}>
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Add Appointment
-                                </Button>
-                            </div>
-                        ) : (
-                            <AppointmentForm
-                                initialData={{ scheduledAt: selectedDate.toISOString() }}
-                                services={services}
-                                staff={staff}
-                                onSubmit={handleCreate}
-                                onCancel={() => {
-                                    if (selectedDate) {
-                                        setViewMode('list');
-                                    } else {
-                                        setIsDialogOpen(false);
-                                    }
-                                }}
-                            />
-                        )}
-                    </DialogContent>
-                </Dialog>
-            </div>
+                            )}
+                        </div>
+                        <Button className="w-full shrink-0" onClick={() => setIsCreateModalOpen(true)}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Appointment
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Calendar */}
             <Card className="glass border-0 flex-1 flex flex-col min-h-0 shadow-none bg-white/50 backdrop-blur-sm">
@@ -344,7 +340,6 @@ export default function AppointmentsPage() {
                     </div>
                 </CardHeader>
                 <CardContent className="p-0 flex-1 flex flex-col min-h-0">
-                    {/* Day headers */}
                     <div className="grid grid-cols-7 border-b border-slate-100 bg-slate-50/50">
                         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                             <div key={day} className="text-center text-xs font-semibold text-slate-500 py-3 uppercase tracking-wider">
@@ -353,7 +348,6 @@ export default function AppointmentsPage() {
                         ))}
                     </div>
 
-                    {/* Calendar grid */}
                     <div className="grid grid-cols-7 grid-rows-6 flex-1 min-h-0 bg-slate-100 gap-px border-b border-slate-100">
                         {days.map((date, index) => {
                             const dayAppointments = getAppointmentsForDay(date);
@@ -363,7 +357,6 @@ export default function AppointmentsPage() {
                                 date.getFullYear() === new Date().getFullYear();
 
                             const count = dayAppointments.length;
-                            // Determine display mode
                             const mode = count <= 3 ? 'detailed' : count <= 8 ? 'compact' : 'dense';
 
                             return (
@@ -393,12 +386,10 @@ export default function AppointmentsPage() {
                                             </div>
 
                                             <div className="flex-1 flex flex-col gap-1.5 min-h-0">
-                                                {/* MODE: DETAILED (1-3 items) */}
                                                 {mode === 'detailed' && dayAppointments.map(apt => (
                                                     <div
                                                         key={apt.id}
                                                         onClick={(e) => handleAppointmentClick(e, apt)}
-                                                        title={`${new Date(apt.scheduledAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - ${apt.customerName} (${apt.service.name})`}
                                                         className={cn(
                                                             "shrink-0 rounded-md border px-2 py-1.5 text-xs transition-all hover:brightness-95 hover:shadow-sm cursor-pointer",
                                                             getCategoryColor(apt.service.category)
@@ -418,17 +409,15 @@ export default function AppointmentsPage() {
                                                     </div>
                                                 ))}
 
-                                                {/* MODE: COMPACT (4-8 items) */}
                                                 {mode === 'compact' && dayAppointments.map(apt => (
                                                     <div
                                                         key={apt.id}
                                                         onClick={(e) => handleAppointmentClick(e, apt)}
-                                                        title={`${new Date(apt.scheduledAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - ${apt.customerName} (${apt.service.name})`}
                                                         className="shrink-0 flex items-center gap-2 text-xs hover:bg-slate-100 rounded px-1 py-0.5 cursor-pointer"
                                                     >
                                                         <div className={cn(
                                                             "h-2 w-2 rounded-sm shrink-0",
-                                                            getCategoryColor(apt.service.category).split(' ')[0] // Get just the bg color
+                                                            getCategoryColor(apt.service.category).split(' ')[0]
                                                         )} />
                                                         <span className="font-mono text-[10px] text-slate-500 shrink-0">
                                                             {new Date(apt.scheduledAt).toLocaleTimeString('en-US', {
@@ -441,13 +430,11 @@ export default function AppointmentsPage() {
                                                     </div>
                                                 ))}
 
-                                                {/* MODE: DENSE (9+ items) */}
                                                 {mode === 'dense' && (
                                                     <>
                                                         {dayAppointments.slice(0, 4).map(apt => (
                                                             <div
                                                                 key={apt.id}
-                                                                title={`${new Date(apt.scheduledAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - ${apt.customerName} (${apt.service.name})`}
                                                                 className="shrink-0 flex items-center gap-2 text-xs"
                                                             >
                                                                 <div className={cn(

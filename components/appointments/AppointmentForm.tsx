@@ -25,6 +25,7 @@ interface AppointmentFormProps {
     onDelete?: () => void;
     onCancel: () => void;
     isSubmitting?: boolean;
+    hideButtons?: boolean;
 }
 
 export function AppointmentForm({
@@ -34,7 +35,8 @@ export function AppointmentForm({
     onSubmit,
     onDelete,
     onCancel,
-    isSubmitting = false
+    isSubmitting = false,
+    hideButtons = false
 }: AppointmentFormProps) {
     const [formData, setFormData] = useState({
         customerName: '',
@@ -51,8 +53,8 @@ export function AppointmentForm({
         if (initialData) {
             const date = new Date(initialData.scheduledAt);
             setFormData({
-                customerName: initialData.customerName,
-                customerPhone: initialData.customerPhone,
+                customerName: initialData.customerName || '',
+                customerPhone: initialData.customerPhone || '',
                 serviceId: initialData.serviceId || initialData.service?.id || '',
                 staffId: initialData.staffId || initialData.staff?.id || '',
                 date: date.toISOString().split('T')[0],
@@ -61,7 +63,6 @@ export function AppointmentForm({
                 notes: initialData.notes || ''
             });
         } else {
-            // Default to today/now if no initial data
             setFormData(prev => ({
                 ...prev,
                 date: new Date().toISOString().split('T')[0]
@@ -74,7 +75,6 @@ export function AppointmentForm({
 
         const scheduledAt = new Date(`${formData.date}T${formData.time}`);
 
-        // Add "Khun" prefix if not already present
         let customerName = formData.customerName.trim();
         if (customerName && !customerName.toLowerCase().startsWith('khun ')) {
             customerName = `Khun ${customerName}`;
@@ -94,7 +94,7 @@ export function AppointmentForm({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form id="appointment-form" onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4">
                 <div className="grid gap-2">
                     <label className="text-sm font-semibold text-[#1F2A53]">Customer Name</label>
@@ -196,34 +196,36 @@ export function AppointmentForm({
                 </div>
             </div>
 
-            <div className="flex justify-between gap-2 pt-4">
-                {initialData && onDelete && (
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={onDelete}
-                        disabled={isSubmitting}
-                    >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                    </Button>
-                )}
-                <div className="flex gap-2 ml-auto">
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        className="text-[#1F2A53] hover:bg-slate-50"
-                        onClick={onCancel}
-                        disabled={isSubmitting}
-                    >
-                        Cancel
-                    </Button>
-                    <Button type="submit" disabled={isSubmitting}>
-                        {initialData ? 'Save Changes' : 'Create Appointment'}
-                    </Button>
+            {!hideButtons && (
+                <div className="flex justify-between gap-2 pt-4">
+                    {initialData && onDelete && (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={onDelete}
+                            disabled={isSubmitting}
+                        >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                        </Button>
+                    )}
+                    <div className="flex gap-2 ml-auto">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            className="text-[#1F2A53] hover:bg-slate-50"
+                            onClick={onCancel}
+                            disabled={isSubmitting}
+                        >
+                            Cancel
+                        </Button>
+                        <Button type="submit" disabled={isSubmitting}>
+                            {initialData ? 'Save Changes' : 'Create Appointment'}
+                        </Button>
+                    </div>
                 </div>
-            </div>
+            )}
         </form>
     );
 }
