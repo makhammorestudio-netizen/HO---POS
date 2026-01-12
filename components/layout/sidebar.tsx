@@ -22,14 +22,22 @@ export function Sidebar() {
         <div className="flex h-screen w-64 flex-col justify-between bg-primary p-6">
             <div>
                 {/* Logo/Brand */}
-                <div className="flex items-center gap-3 pb-8 mb-6">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-primary font-bold text-xl shadow-lg">
-                        H
+                <Link href="/" className="flex items-center gap-3 pb-8 mb-6 group cursor-pointer">
+                    <img
+                        src="/assets/logo-head-office.jpg"
+                        alt="Head Office Bangkok Logo"
+                        className="h-11 w-11 object-contain rounded-xl bg-white p-1.5 shadow-lg border border-white/10"
+                        onError={(e) => (e.currentTarget.style.display = 'none')}
+                    />
+                    <div className="flex flex-col">
+                        <span className="text-base font-bold text-white leading-tight tracking-tight">
+                            Head Office Bangkok
+                        </span>
+                        <span className="text-[11px] font-medium text-white/60 tracking-wide uppercase">
+                            Hair & Beauty
+                        </span>
                     </div>
-                    <div>
-                        <h1 className="font-bold text-xl text-white">Salon.</h1>
-                    </div>
-                </div>
+                </Link>
 
                 {/* Navigation */}
                 <nav className="space-y-2">
