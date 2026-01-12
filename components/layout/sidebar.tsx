@@ -23,22 +23,22 @@ export function Sidebar() {
         <div className="flex h-screen w-64 flex-col justify-between bg-primary p-6">
             <div>
                 {/* Logo/Brand */}
-                <Link href="/" className="flex items-center gap-3 px-4 py-6 mb-2 group cursor-pointer transition-opacity hover:opacity-90">
-                    <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center p-1.5 shadow-lg">
+                <Link href="/" className="flex flex-col items-center gap-3 px-4 py-8 mb-4 group cursor-pointer transition-opacity hover:opacity-90 text-center">
+                    <div className="h-16 w-16 rounded-2xl bg-white flex items-center justify-center p-2.5 shadow-xl border border-white/10">
                         <img
                             src="/logo-head-office.png"
                             alt="Head Office Bangkok"
-                            className="h-7 w-7 object-contain"
+                            className="h-full w-full object-contain"
                             onError={(e) => (e.currentTarget.style.display = 'none')}
                         />
                     </div>
 
-                    <div className="leading-none">
-                        <div className={`${playfairScript.className} text-white text-[20px] font-normal whitespace-nowrap`}>
+                    <div className="flex flex-col items-center">
+                        <div className={`${playfairScript.className} text-white text-[22px] font-normal leading-tight`}>
                             Head Office Bangkok
                         </div>
 
-                        <div className="text-[11px] uppercase tracking-[0.18em] text-white/70 mt-1">
+                        <div className="text-[11px] uppercase tracking-[0.25em] text-white/70 mt-2">
                             Hair & Beauty
                         </div>
                     </div>
