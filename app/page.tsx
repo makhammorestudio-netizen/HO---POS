@@ -259,7 +259,7 @@ export default function Home() {
                                                         {transaction.items.map((item: any) => item.service.name).join(', ')}
                                                     </p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {transaction.customer ? transaction.customer.name : 'Walk-in'} • {transaction.items[0]?.primaryStaff?.name}
+                                                        {transaction.customer ? transaction.customer.fullName : 'Walk-in'} • {transaction.items[0]?.primaryStaff?.name}
                                                     </p>
                                                 </div>
                                             </div>

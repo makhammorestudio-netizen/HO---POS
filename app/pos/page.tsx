@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { StaffAvatar } from '@/components/staff/StaffAvatar';
+import { CustomerSelector } from '@/components/customers/CustomerSelector';
+import { CustomerFormModal } from '@/components/customers/CustomerFormModal';
 
 // Types
 interface Service {
@@ -58,12 +60,15 @@ const CATEGORIES = [
 export default function POSPage() {
     const [services, setServices] = useState<Service[]>([]);
     const [staff, setStaff] = useState<Staff[]>([]);
+    const [customers, setCustomers] = useState<any[]>([]);
+    const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
     const [cart, setCart] = useState<CartItem[]>([]);
     const [selectedCategory, setSelectedCategory] = useState('ALL');
     const [searchQuery, setSearchQuery] = useState('');
     const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CREDIT_CARD' | 'TRANSFER' | 'GOWABI'>('CASH');
     const [note, setNote] = useState('');
     const [isCheckingOut, setIsCheckingOut] = useState(false);
+    const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
@@ -80,11 +85,13 @@ export default function POSPage() {
                 const staffRes = await fetch('/api/staff');
                 if (staffRes.ok) {
                     const data = await staffRes.json();
-                    if (Array.isArray(data)) {
-                        console.log('📋 Full staff list:', data);
-                        console.log('👥 Staff roles:', data.map((s: any) => ({ name: s.name, role: s.role })));
-                        setStaff(data);
-                    }
+                    if (Array.isArray(data)) setStaff(data);
+                }
+
+                const customersRes = await fetch('/api/customers');
+                if (customersRes.ok) {
+                    const data = await customersRes.json();
+                    if (Array.isArray(data)) setCustomers(data);
                 }
             } catch (error) {
                 console.error("Failed to fetch data", error);
@@ -93,6 +100,33 @@ export default function POSPage() {
         };
         fetchData();
     }, []);
+
+    const fetchCustomers = async () => {
+        try {
+            const res = await fetch('/api/customers');
+            const data = await res.json();
+            if (Array.isArray(data)) setCustomers(data);
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleSaveCustomer = async (data: any) => {
+        const res = await fetch('/api/customers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || "Failed to save customer");
+        }
+
+        const newCustomer = await res.json();
+        await fetchCustomers(); // Refresh list
+        setSelectedCustomerId(newCustomer.id); // Auto-select
+    };
 
     const addToCart = (service: Service) => {
         // Default to first stylist or technician
@@ -149,7 +183,8 @@ export default function POSPage() {
                         category: item.service.category
                     })),
                     paymentMethod,
-                    note
+                    note,
+                    customerId: selectedCustomerId
                 }),
             });
 
@@ -158,6 +193,7 @@ export default function POSPage() {
                 setCart([]);
                 setNote('');
                 setPaymentMethod('CASH');
+                setSelectedCustomerId(null); // Reset customer
                 // Clear success message after 3 seconds
                 setTimeout(() => setSuccess(null), 3000);
             } else {
@@ -375,45 +411,59 @@ export default function POSPage() {
 
                 {/* Footer / Checkout */}
                 <div className="border-t border-slate-200 bg-slate-50 p-6 space-y-4">
-                    {/* Note */}
-                    <Input
-                        placeholder="Add note / coupon..."
-                        value={note}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => setNote(e.target.value)}
-                        className="bg-white border-slate-200"
+                    {/* Customer Selection */}
+                    <CustomerSelector
+                        customers={customers}
+                        selectedCustomerId={selectedCustomerId}
+                        onSelect={setSelectedCustomerId}
+                        onAddNew={() => setIsCustomerModalOpen(true)}
                     />
 
-                    {/* Payment Method */}
-                    <div className="grid grid-cols-4 gap-2">
-                        {[
-                            { id: 'CASH', icon: Banknote, label: 'Cash' },
-                            { id: 'CREDIT_CARD', icon: CreditCard, label: 'Card' },
-                            { id: 'TRANSFER', icon: Smartphone, label: 'Transfer' },
-                            { id: 'GOWABI', icon: QrCode, label: 'Gowabi' },
-                        ].map(method => (
-                            <button
-                                key={method.id}
-                                onClick={() => setPaymentMethod(method.id as any)}
-                                className={cn(
-                                    "flex flex-col items-center justify-center rounded-lg p-2 text-[10px] transition-all gap-1",
-                                    paymentMethod === method.id
-                                        ? "bg-primary text-white shadow-md"
-                                        : "bg-white text-muted-foreground hover:bg-slate-100 border border-slate-200"
-                                )}
-                            >
-                                <method.icon className="h-4 w-4" />
-                                {method.label}
-                            </button>
-                        ))}
+                    {/* Note */}
+                    <div className="space-y-1.5">
+                        <label className="text-sm font-bold text-[#1F2A53]">Notes / Coupon</label>
+                        <Input
+                            placeholder="Add note / coupon..."
+                            value={note}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setNote(e.target.value)}
+                            className="bg-white border-slate-200"
+                        />
                     </div>
 
-                    <div className="flex items-center justify-between text-lg font-bold text-foreground">
+                    {/* Payment Method */}
+                    <div className="space-y-1.5">
+                        <label className="text-sm font-bold text-[#1F2A53]">Payment Method</label>
+                        <div className="grid grid-cols-4 gap-2">
+                            {[
+                                { id: 'CASH', icon: Banknote, label: 'Cash' },
+                                { id: 'CREDIT_CARD', icon: CreditCard, label: 'Card' },
+                                { id: 'TRANSFER', icon: Smartphone, label: 'Transfer' },
+                                { id: 'GOWABI', icon: QrCode, label: 'Gowabi' },
+                            ].map(method => (
+                                <button
+                                    key={method.id}
+                                    onClick={() => setPaymentMethod(method.id as any)}
+                                    className={cn(
+                                        "flex flex-col items-center justify-center rounded-lg p-2 text-[10px] transition-all gap-1",
+                                        paymentMethod === method.id
+                                            ? "bg-primary text-white shadow-md border-primary"
+                                            : "bg-white text-muted-foreground hover:bg-slate-100 border border-slate-200"
+                                    )}
+                                >
+                                    <method.icon className="h-4 w-4" />
+                                    {method.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-lg font-bold text-[#1F2A53] pt-2">
                         <span>Total</span>
                         <span>฿{totalAmount.toFixed(2)}</span>
                     </div>
 
                     <Button
-                        className="w-full h-12 text-lg font-bold shadow-lg shadow-primary/25"
+                        className="w-full h-12 text-lg font-bold shadow-lg shadow-primary/25 bg-[#1F3C88] hover:bg-[#1F3C88]/90"
                         onClick={handleCheckout}
                         disabled={cart.length === 0 || isCheckingOut}
                     >
@@ -428,6 +478,12 @@ export default function POSPage() {
                     </Button>
                 </div>
             </div>
+
+            <CustomerFormModal
+                isOpen={isCustomerModalOpen}
+                onClose={() => setIsCustomerModalOpen(false)}
+                onSave={handleSaveCustomer}
+            />
         </div>
     );
 }

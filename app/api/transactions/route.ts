@@ -10,6 +10,15 @@ export async function POST(request: Request) {
         // 1. Create Transaction
         const totalAmount = items.reduce((sum: number, item: any) => sum + Number(item.price), 0);
 
+        // Fetch customer name for snapshot if customerId exists
+        let customerNameSnapshot = body.customerNameSnapshot;
+        if (customerId && !customerNameSnapshot) {
+            const customer = await prisma.customer.findUnique({ where: { id: customerId } });
+            if (customer) {
+                customerNameSnapshot = customer.fullName;
+            }
+        }
+
         // Fetch staff details for commission calculation
         const staffIds = new Set<string>();
         items.forEach((item: any) => {
@@ -28,6 +37,7 @@ export async function POST(request: Request) {
                 totalAmount,
                 paymentMethod: paymentMethod as PaymentMethod,
                 customerId,
+                customerNameSnapshot,
                 note,
                 items: {
                     create: items.flatMap((item: any) => {
@@ -69,8 +79,7 @@ export async function POST(request: Request) {
                                 commissionAmount: profit * commissionRate
                             });
                         } else if (!hasMainStaff && hasAssistant) {
-                            // Edge Case: Assistant Solo on Non-Hair (Technically shouldn't happen via UI rules but good for safety)
-                            // Treat as Solo
+                            // Solo Assistant on non-hair service (fallback)
                             createdItems.push({
                                 serviceId: item.serviceId,
                                 price: price,
@@ -94,6 +103,26 @@ export async function POST(request: Request) {
                 },
             },
         });
+
+        // 2. Update Customer Stats
+        if (customerId) {
+            const customer = await prisma.customer.findUnique({ where: { id: customerId } });
+            if (customer) {
+                const totalVisits = customer.totalVisits + 1;
+                const lifetimeSpend = Number(customer.lifetimeSpend) + totalAmount;
+                const avgTicket = lifetimeSpend / totalVisits;
+
+                await prisma.customer.update({
+                    where: { id: customerId },
+                    data: {
+                        totalVisits,
+                        lifetimeSpend,
+                        avgTicket,
+                        lastVisitAt: new Date(),
+                    }
+                });
+            }
+        }
 
         return NextResponse.json(transaction);
     } catch (error) {
