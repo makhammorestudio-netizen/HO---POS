@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, Scissors, Users, UserCircle, LogOut, Sparkles, Calendar, Banknote } from "lucide-react";
+import { playfairScript } from "@/app/layout";
 
 const navItems = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -22,20 +23,24 @@ export function Sidebar() {
         <div className="flex h-screen w-64 flex-col justify-between bg-primary p-6">
             <div>
                 {/* Logo/Brand */}
-                <Link href="/" className="flex items-center gap-3 pb-8 mb-6 group cursor-pointer">
-                    <img
-                        src="/assets/logo-head-office.jpg"
-                        alt="Head Office Bangkok Logo"
-                        className="h-11 w-11 object-contain rounded-xl bg-white p-1.5 shadow-lg border border-white/10"
-                        onError={(e) => (e.currentTarget.style.display = 'none')}
-                    />
-                    <div className="flex flex-col">
-                        <span className="text-base font-bold text-white leading-tight tracking-tight">
+                <Link href="/" className="flex items-center gap-3 px-4 py-6 mb-2 group cursor-pointer transition-opacity hover:opacity-90">
+                    <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center p-1.5 shadow-lg">
+                        <img
+                            src="/logo-head-office.png"
+                            alt="Head Office Bangkok"
+                            className="h-7 w-7 object-contain"
+                            onError={(e) => (e.currentTarget.style.display = 'none')}
+                        />
+                    </div>
+
+                    <div className="leading-none">
+                        <div className={`${playfairScript.className} text-white text-[20px] font-normal whitespace-nowrap`}>
                             Head Office Bangkok
-                        </span>
-                        <span className="text-[11px] font-medium text-white/60 tracking-wide uppercase">
+                        </div>
+
+                        <div className="text-[11px] uppercase tracking-[0.18em] text-white/70 mt-1">
                             Hair & Beauty
-                        </span>
+                        </div>
                     </div>
                 </Link>
 

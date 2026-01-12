@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "@/components/layout/sidebar";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+export const playfairScript = Playfair_Display({
+    subsets: ["latin"],
+    weight: "400",
+});
 
 export const metadata: Metadata = {
     title: "HOPOS",
