@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, Scissors, Users, UserCircle, LogOut, Sparkles, Calendar, Banknote } from "lucide-react";
-import { playfairScript } from "@/app/layout";
+import { playfairScript } from "@/lib/fonts";
 
 const navItems = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
