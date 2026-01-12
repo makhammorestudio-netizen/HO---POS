@@ -13,8 +13,8 @@ export async function POST(request: Request) {
         // Fetch staff details for commission calculation
         const staffIds = new Set<string>();
         items.forEach((item: any) => {
-            if (item.primaryStaffId) staffIds.add(item.primaryStaffId);
-            if (item.assistantStaffId) staffIds.add(item.assistantStaffId);
+            if (item.mainStaffId) staffIds.add(item.mainStaffId);
+            if (item.assistantId) staffIds.add(item.assistantId);
         });
 
         const staffMembers = await prisma.user.findMany({

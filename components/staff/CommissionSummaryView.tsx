@@ -323,7 +323,7 @@ export function CommissionSummaryView() {
                                     >
                                         <TableCell className="font-medium">
                                             <div className="flex items-center gap-3">
-                                                <StaffAvatar name={staff.name} avatar={staff.avatar} size="sm" />
+                                                <StaffAvatar name={staff.name} avatar={staff.avatar} src={staff.avatar} size="sm" />
                                                 <span>{staff.name}</span>
                                             </div>
                                         </TableCell>

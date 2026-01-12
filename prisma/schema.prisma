@@ -19,6 +19,8 @@ enum ServiceCategory {
   NAIL
   LASH
   PRODUCT
+  WAX
+  OTHER
 }
 
 enum PaymentMethod {

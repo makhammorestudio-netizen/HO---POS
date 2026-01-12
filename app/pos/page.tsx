@@ -36,6 +36,7 @@ interface Staff {
     name: string;
     role: 'STYLIST' | 'TECHNICIAN' | 'ASSISTANT';
     avatar?: string | null;
+    photoUrl?: string | null;
 }
 
 interface CartItem {
@@ -293,12 +294,18 @@ export default function POSPage() {
                                     {/* Main Staff - STYLIST or TECHNICIAN only */}
                                     <div className="flex items-center gap-2">
                                         <div className="shrink-0">
-                                            <StaffAvatar
-                                                name={staff.find((s: Staff) => s.id === item.mainStaffId)?.name || "?"}
-                                                avatar={staff.find((s: Staff) => s.id === item.mainStaffId)?.avatar}
-                                                size="sm"
-                                                className="h-8 w-8"
-                                            />
+                                            {(() => {
+                                                const s = staff.find((s: Staff) => s.id === item.mainStaffId);
+                                                return (
+                                                    <StaffAvatar
+                                                        name={s?.name || "?"}
+                                                        avatar={s?.avatar}
+                                                        src={s?.photoUrl}
+                                                        size="sm"
+                                                        className="h-8 w-8"
+                                                    />
+                                                );
+                                            })()}
                                         </div>
                                         <select
                                             className="w-full rounded bg-white px-2 py-1 text-xs border border-slate-200 text-foreground h-8"
@@ -323,12 +330,18 @@ export default function POSPage() {
                                         <div className="flex items-center gap-2 mt-2">
                                             <div className="shrink-0">
                                                 {item.assistantId ? (
-                                                    <StaffAvatar
-                                                        name={staff.find((s: Staff) => s.id === item.assistantId)?.name || "?"}
-                                                        avatar={staff.find((s: Staff) => s.id === item.assistantId)?.avatar}
-                                                        size="sm"
-                                                        className="h-8 w-8"
-                                                    />
+                                                    (() => {
+                                                        const s = staff.find((s: Staff) => s.id === item.assistantId);
+                                                        return (
+                                                            <StaffAvatar
+                                                                name={s?.name || "?"}
+                                                                avatar={s?.avatar}
+                                                                src={s?.photoUrl}
+                                                                size="sm"
+                                                                className="h-8 w-8"
+                                                            />
+                                                        );
+                                                    })()
                                                 ) : (
                                                     <div className="h-8 w-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs text-muted-foreground">
                                                         -
