@@ -35,7 +35,10 @@ export async function GET(request: Request) {
         // Fetch all transaction items in the date range
         const allItems = await prisma.transactionItem.findMany({
             where: {
-                transaction: dateFilter
+                transaction: {
+                    ...dateFilter,
+                    status: 'COMPLETED'
+                }
             },
             include: {
                 service: true,

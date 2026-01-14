@@ -16,6 +16,7 @@ export async function GET(request: Request) {
         // Fetch transactions for the day
         const transactions = await prisma.transaction.findMany({
             where: {
+                status: 'COMPLETED',
                 createdAt: {
                     gte: start,
                     lte: end,

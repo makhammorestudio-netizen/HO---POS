@@ -17,16 +17,29 @@ import {
     Eye,
     Package,
     TrendingUp,
-    DollarSign
+    DollarSign,
+    MoreVertical,
+    History,
+    FileX
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { VoidTransactionModal } from '@/components/transactions/VoidTransactionModal';
 
 // Types
 interface Transaction {
     id: string;
     totalAmount: number;
     paymentMethod: 'CASH' | 'CREDIT_CARD' | 'TRANSFER' | 'GOWABI';
+    status: 'COMPLETED' | 'VOID';
     createdAt: string;
+    voidedAt?: string;
+    voidReason?: string;
     customer?: {
         name: string;
     };
@@ -67,6 +80,10 @@ export default function TransactionsPage() {
         end: new Date().toISOString().split('T')[0]
     });
     const [filterMethod, setFilterMethod] = useState('ALL');
+
+    // Void Modal State
+    const [voidModalOpen, setVoidModalOpen] = useState(false);
+    const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
     const fetchTransactions = async () => {
         setLoading(true);
@@ -195,7 +212,7 @@ export default function TransactionsPage() {
 
             {/* Summary Cards */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="bg-white border-0 rounded-friendly card-shadow">
+                <Card className="bg-white border-0 rounded-friendly card-shadow transition-all hover:shadow-md">
                     <CardContent className="p-6">
                         <div className="flex items-start justify-between">
                             <div className="space-y-2">
@@ -210,7 +227,7 @@ export default function TransactionsPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white border-0 rounded-friendly card-shadow">
+                <Card className="bg-white border-0 rounded-friendly card-shadow transition-all hover:shadow-md">
                     <CardContent className="p-6">
                         <div className="flex items-start justify-between">
                             <div className="space-y-2">
@@ -233,8 +250,8 @@ export default function TransactionsPage() {
                         </div>
                         <div className="grid grid-cols-4 gap-4">
                             {Object.entries(data?.summary.revenueByMethod || {}).map(([method, amount]) => (
-                                <div key={method} className="text-center">
-                                    <div className="text-xs font-medium text-[#4B5675] mb-1">{method.replace('_', ' ')}</div>
+                                <div key={method} className="text-center group">
+                                    <div className="text-xs font-medium text-[#4B5675] mb-1 group-hover:text-[#1F2A53] transition-colors">{method.replace('_', ' ')}</div>
                                     <div className="font-bold text-lg text-[#1F2A53]">฿{amount.toLocaleString()}</div>
                                 </div>
                             ))}
@@ -253,7 +270,7 @@ export default function TransactionsPage() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {Object.entries(data?.summary.revenueByCategory || {}).map(([category, amount]) => (
-                                <div key={category} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                <div key={category} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 transition-colors hover:bg-slate-100/50">
                                     <div className="flex items-center gap-3">
                                         <div className={cn("p-2 rounded-lg", getCategoryColor(category))}>
                                             {category === 'HAIR' && <Scissors className="h-4 w-4" />}
@@ -273,8 +290,8 @@ export default function TransactionsPage() {
                 {/* Right: Transactions Table */}
                 <div className="lg:col-span-2">
                     <Card className="bg-white border-0 rounded-friendly card-shadow">
-                        <CardHeader>
-                            <CardTitle className="text-lg text-[#1F2A53]">Recent Transactions</CardTitle>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle className="text-lg text-[#1F2A53]">Transaction History</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                             <div className="relative overflow-x-auto">
@@ -285,52 +302,108 @@ export default function TransactionsPage() {
                                             <th className="px-6 py-3 font-semibold">Customer</th>
                                             <th className="px-6 py-3 font-semibold">Services</th>
                                             <th className="px-6 py-3 font-semibold">Method</th>
+                                            <th className="px-6 py-3 font-semibold">Status</th>
                                             <th className="px-6 py-3 text-right font-semibold">Amount</th>
+                                            <th className="px-6 py-3 text-center font-semibold">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {loading ? (
                                             <tr>
-                                                <td colSpan={5} className="px-6 py-8 text-center text-[#4B5675]">
-                                                    Loading transactions...
+                                                <td colSpan={7} className="px-6 py-8 text-center text-[#4B5675]">
+                                                    <div className="flex flex-col items-center gap-2">
+                                                        <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                                        Loading transactions...
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ) : data?.transactions.length === 0 ? (
                                             <tr>
-                                                <td colSpan={5} className="px-6 py-8 text-center text-[#4B5675]">
+                                                <td colSpan={7} className="px-6 py-8 text-center text-[#4B5675]">
                                                     No transactions found for this period.
                                                 </td>
                                             </tr>
                                         ) : (
-                                            data?.transactions.map((t) => (
-                                                <tr key={t.id} className="bg-white border-b border-slate-50 hover:bg-[#E7EEFF]/50 transition-colors">
-                                                    <td className="px-6 py-4 font-medium text-[#4B5675]">
-                                                        {new Date(t.createdAt).toLocaleDateString()} <br />
-                                                        <span className="text-xs opacity-70">{new Date(t.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                                    </td>
-                                                    <td className="px-6 py-4 font-semibold text-[#1F2A53]">
-                                                        {t.customer?.name || 'Walk-in'}
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex flex-col gap-1">
-                                                            {t.items.map((item, i) => (
-                                                                <span key={i} className="text-xs bg-slate-100 text-[#4B5675] px-2 py-0.5 rounded-full w-fit border border-slate-200">
-                                                                    {item.service.name}
+                                            data?.transactions.map((t) => {
+                                                const isVoid = t.status === 'VOID';
+
+                                                return (
+                                                    <tr key={t.id} className={cn(
+                                                        "bg-white border-b border-slate-50 transition-colors",
+                                                        isVoid ? "bg-slate-50/50 grayscale-[0.5] opacity-70" : "hover:bg-[#E7EEFF]/50"
+                                                    )}>
+                                                        <td className="px-6 py-4 font-medium text-[#4B5675]">
+                                                            {new Date(t.createdAt).toLocaleDateString()} <br />
+                                                            <span className="text-xs opacity-70">{new Date(t.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                        </td>
+                                                        <td className="px-6 py-4 font-semibold text-[#1F2A53]">
+                                                            {t.customer?.name || 'Walk-in'}
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex flex-col gap-1">
+                                                                {t.items.map((item, i) => (
+                                                                    <span key={i} className="text-xs bg-slate-100 text-[#4B5675] px-2 py-0.5 rounded-full w-fit border border-slate-200">
+                                                                        {item.service.name}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-2 text-xs font-medium text-[#4B5675] bg-slate-100 px-2 py-1 rounded-lg w-fit border border-slate-200">
+                                                                {getMethodIcon(t.paymentMethod)}
+                                                                {t.paymentMethod.replace('_', ' ')}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            {isVoid ? (
+                                                                <div className="flex flex-col items-center gap-0.5">
+                                                                    <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-[10px] font-bold border border-red-200 leading-none">
+                                                                        VOID
+                                                                    </span>
+                                                                    {t.voidReason && (
+                                                                        <span className="text-[10px] text-red-600/70">{t.voidReason}</span>
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[10px] font-bold border border-green-200">
+                                                                    COMPLETED
                                                                 </span>
-                                                            ))}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-2 text-xs font-medium text-[#4B5675] bg-slate-100 px-2 py-1 rounded-lg w-fit border border-slate-200">
-                                                            {getMethodIcon(t.paymentMethod)}
-                                                            {t.paymentMethod.replace('_', ' ')}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right font-bold text-primary">
-                                                        ฿{Number(t.totalAmount).toLocaleString()}
-                                                    </td>
-                                                </tr>
-                                            ))
+                                                            )}
+                                                        </td>
+                                                        <td className={cn(
+                                                            "px-6 py-4 text-right font-bold",
+                                                            isVoid ? "text-slate-400 line-through" : "text-primary"
+                                                        )}>
+                                                            ฿{Number(t.totalAmount).toLocaleString()}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-center">
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-[#4B5675] hover:text-[#1F2A53]">
+                                                                        <MoreVertical className="h-4 w-4" />
+                                                                    </Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end" className="w-40">
+                                                                    <DropdownMenuItem className="gap-2 text-[#4B5675]">
+                                                                        <Eye className="h-4 w-4" /> View Details
+                                                                    </DropdownMenuItem>
+                                                                    {!isVoid && (
+                                                                        <DropdownMenuItem
+                                                                            className="gap-2 text-red-600 focus:text-red-600 focus:bg-red-50"
+                                                                            onClick={() => {
+                                                                                setSelectedTx(t);
+                                                                                setVoidModalOpen(true);
+                                                                            }}
+                                                                        >
+                                                                            <FileX className="h-4 w-4" /> Void Transaction
+                                                                        </DropdownMenuItem>
+                                                                    )}
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
                                         )}
                                     </tbody>
                                 </table>
@@ -339,6 +412,22 @@ export default function TransactionsPage() {
                     </Card>
                 </div>
             </div>
+
+            {/* Void Modal */}
+            {selectedTx && (
+                <VoidTransactionModal
+                    open={voidModalOpen}
+                    onClose={() => {
+                        setVoidModalOpen(false);
+                        setSelectedTx(null);
+                    }}
+                    onSuccess={() => {
+                        fetchTransactions();
+                    }}
+                    transactionId={selectedTx.id}
+                    paymentMethod={selectedTx.paymentMethod}
+                />
+            )}
         </div>
     );
 }

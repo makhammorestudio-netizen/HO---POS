@@ -50,7 +50,8 @@ export async function GET(request: Request) {
         });
 
         // Calculate Summary Metrics
-        const totalRevenue = transactions.reduce((sum, t) => sum + Number(t.totalAmount), 0);
+        const completedTransactions = transactions.filter(t => t.status === 'COMPLETED');
+        const totalRevenue = completedTransactions.reduce((sum, t) => sum + Number(t.totalAmount), 0);
 
         // Today's Revenue (if within filtered range, otherwise 0 or separate query? 
         // The prompt asks for "Today's Revenue" card. It usually implies "Today" regardless of filter, 
@@ -62,6 +63,7 @@ export async function GET(request: Request) {
 
         const todayTransactions = await prisma.transaction.findMany({
             where: {
+                status: 'COMPLETED',
                 createdAt: {
                     gte: todayStart,
                     lte: todayEnd
@@ -78,7 +80,7 @@ export async function GET(request: Request) {
             GOWABI: 0
         };
 
-        transactions.forEach(t => {
+        completedTransactions.forEach(t => {
             if (revenueByMethod[t.paymentMethod] !== undefined) {
                 revenueByMethod[t.paymentMethod] += Number(t.totalAmount);
             }
@@ -92,7 +94,7 @@ export async function GET(request: Request) {
             PRODUCT: 0
         };
 
-        transactions.forEach(t => {
+        completedTransactions.forEach(t => {
             t.items.forEach(item => {
                 if (item.service && revenueByCategory[item.service.category] !== undefined) {
                     revenueByCategory[item.service.category] += Number(item.price);

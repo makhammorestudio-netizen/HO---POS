@@ -9,6 +9,7 @@ datasource db {
 
 enum Role {
   ADMIN
+  MANAGER
   STYLIST
   TECHNICIAN
   ASSISTANT
@@ -42,6 +43,11 @@ enum CommissionType {
   FIXED
 }
 
+enum TransactionStatus {
+  COMPLETED
+  VOID
+}
+
 enum Gender {
   FEMALE
   MALE
@@ -70,6 +76,7 @@ model User {
   // Relations
   primaryTransactions   TransactionItem[] @relation("PrimaryStaff")
   assistantTransactions TransactionItem[] @relation("AssistantStaff")
+  voidedTransactions   Transaction[]     @relation("VoidedBy")
   commissions           CommissionLog[]
   appointments          Appointment[]
 }
@@ -129,6 +136,13 @@ model Transaction {
   
   customerId    String?
   customer      Customer?     @relation(fields: [customerId], references: [id])
+
+  status        TransactionStatus @default(COMPLETED)
+  voidedAt      DateTime?
+  voidedByStaffId String?
+  voidedBy      User?             @relation("VoidedBy", fields: [voidedByStaffId], references: [id])
+  voidReason    String?
+  voidNote      String?
 
   items         TransactionItem[]
 }

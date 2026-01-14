@@ -12,6 +12,7 @@ export async function GET() {
         // Monthly Revenue
         const monthlyTransactions = await prisma.transaction.aggregate({
             where: {
+                status: 'COMPLETED',
                 createdAt: {
                     gte: startOfMonth
                 }
@@ -24,6 +25,7 @@ export async function GET() {
         // Today's Transactions Count
         const todayCount = await prisma.transaction.count({
             where: {
+                status: 'COMPLETED',
                 createdAt: {
                     gte: startOfToday
                 }
