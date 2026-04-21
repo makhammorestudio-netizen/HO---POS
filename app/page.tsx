@@ -13,7 +13,8 @@ import {
     UserPlus,
     Clock,
     Target,
-    CalendarDays
+    CalendarDays,
+    Edit2
 } from 'lucide-react';
 import { DaySchedule } from '@/components/dashboard/DaySchedule';
 import { UpcomingAppointments } from '@/components/dashboard/UpcomingAppointments';
@@ -30,8 +31,16 @@ interface DashboardMetrics {
 export default function Home() {
     const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
     const [loading, setLoading] = useState(true);
+    const [monthlyTarget, setMonthlyTarget] = useState(200000);
+    const [isEditingTarget, setIsEditingTarget] = useState(false);
+    const [editTargetValue, setEditTargetValue] = useState("");
 
     useEffect(() => {
+        const savedTarget = localStorage.getItem("ho_pos_monthly_target");
+        if (savedTarget) {
+            setMonthlyTarget(Number(savedTarget));
+        }
+
         const fetchMetrics = async () => {
             try {
                 const res = await fetch('/api/dashboard');
@@ -56,8 +65,30 @@ export default function Home() {
         );
     }
 
-    const monthlyTarget = 200000; // ฿200k target
-    const progress = ((metrics?.monthlyRevenue || 0) / monthlyTarget) * 100;
+    const formatTHB = (value: number) => {
+        return new Intl.NumberFormat("th-TH", {
+            style: "currency",
+            currency: "THB",
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+        }).format(value);
+    };
+
+    const handleSaveTarget = () => {
+        const val = Number(editTargetValue);
+        if (!isNaN(val) && val >= 0) {
+            setMonthlyTarget(val);
+            localStorage.setItem("ho_pos_monthly_target", val.toString());
+            setIsEditingTarget(false);
+        }
+    };
+
+    const handleEditClick = () => {
+        setEditTargetValue(monthlyTarget.toString());
+        setIsEditingTarget(true);
+    };
+
+    const progress = monthlyTarget > 0 ? ((metrics?.monthlyRevenue || 0) / monthlyTarget) * 100 : 0;
 
     return (
         <div className="space-y-8">
@@ -146,9 +177,40 @@ export default function Home() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-6">
-                                <div className="flex items-baseline justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Monthly Target</span>
-                                    <span className="text-2xl font-bold text-primary">฿{monthlyTarget.toLocaleString()}</span>
+                                <div className="flex items-center justify-between min-h-[40px]">
+                                    <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                                        Monthly Target
+                                        {!isEditingTarget && (
+                                            <button onClick={handleEditClick} className="text-primary hover:opacity-80 transition-opacity" title="Edit Target">
+                                                <Edit2 className="h-3.5 w-3.5" />
+                                            </button>
+                                        )}
+                                    </span>
+                                    {isEditingTarget ? (
+                                        <div className="flex items-center gap-2">
+                                            <div className="relative">
+                                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">฿</span>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={editTargetValue}
+                                                    onChange={(e) => setEditTargetValue(e.target.value)}
+                                                    className="w-28 pl-6 pr-2 py-1 text-right text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-primary bg-white text-primary font-bold shadow-sm"
+                                                    autoFocus
+                                                />
+                                            </div>
+                                            <Button size="sm" onClick={handleSaveTarget} className="h-7 px-3 text-xs bg-primary text-white hover:bg-primary/90 rounded-md shadow-sm">Save</Button>
+                                            <Button size="sm" variant="ghost" onClick={() => setIsEditingTarget(false)} className="h-7 px-2 text-xs text-muted-foreground hover:bg-slate-100 rounded-md">Cancel</Button>
+                                        </div>
+                                    ) : (
+                                        <span 
+                                            className="text-2xl font-bold text-primary cursor-pointer hover:opacity-80 transition-opacity" 
+                                            onClick={handleEditClick} 
+                                            title="Click to edit target"
+                                        >
+                                            {formatTHB(monthlyTarget)}
+                                        </span>
+                                    )}
                                 </div>
 
                                 {/* Progress Bar */}
